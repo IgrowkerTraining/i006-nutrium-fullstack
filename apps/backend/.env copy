@@ -3,3 +3,4 @@ DB_USER=nutrium_user
 DB_PASS=nutrium_password
 DB_NAME=nutrium_db
 DB_PORT=5432
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production

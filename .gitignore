@@ -31,4 +31,5 @@ dist-ssr
 .env.production
 .env.production.local
 .env.test
+.env.copy
 .env.test.local

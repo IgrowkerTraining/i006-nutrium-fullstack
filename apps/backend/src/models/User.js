@@ -55,6 +55,13 @@ User.init(
       comment: 'Identificador único universal generado automáticamente',
     },
 
+    // NAME: Nombre del usuario
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      comment: 'Nombre completo del usuario',
+    },
+
     // EMAIL: Identificación única del usuario
     email: {
       type: DataTypes.STRING(255),
