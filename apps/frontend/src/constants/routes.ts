@@ -3,6 +3,8 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   HOME: '/',
+  CUESTIONARIO_PERSONAL: '/cuestionario-personal',
+  CUESTIONARIO_SALUD: '/cuestionario-salud',
 } as const;
 
 export const API_ENDPOINTS = {
