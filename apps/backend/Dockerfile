@@ -13,8 +13,8 @@ RUN npm ci --only=production && npm cache clean --force
 # Development stage
 FROM base AS development
 
-# Install all dependencies including devDependencies
-RUN npm ci
+# Remove production node_modules and install all dependencies including devDependencies
+RUN rm -rf node_modules && npm ci
 
 # Copy source code
 COPY . .
