@@ -12,7 +12,7 @@ const CuestionarioSalud: React.FC = () => {
       
       <div>
         
-        <h1>Cuestionario Personal</h1>
+        <h1>Cuestionario de Salud</h1>
         
         
         <Button onClick={() => navigate("/cuestionario-personal")}>
