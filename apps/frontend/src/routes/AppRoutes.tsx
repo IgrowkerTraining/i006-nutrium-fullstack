@@ -30,17 +30,17 @@ export const AppRoutes: React.FC = () => {
       <Route
         path="/cuestionario-personal"
         element={
-          <ProtectedRoute>
+          
             <CuestionarioPersonal />
-          </ProtectedRoute>
+          
         }
       />
       <Route
         path="/cuestionario-salud"
         element={
-          <ProtectedRoute>
+          
             <CuestionarioSalud />
-          </ProtectedRoute>
+          
         }
       />
       <Route
