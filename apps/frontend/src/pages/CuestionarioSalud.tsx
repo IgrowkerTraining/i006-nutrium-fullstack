@@ -15,7 +15,7 @@ const CuestionarioSalud: React.FC = () => {
         <h1>Cuestionario Personal</h1>
         
         // El botón que navega
-        <Button onClick={() => navigate("/cuestionario-salud")}>
+        <Button onClick={() => navigate("/cuestionario-personal")}>
           Siguiente
         </Button>
 
