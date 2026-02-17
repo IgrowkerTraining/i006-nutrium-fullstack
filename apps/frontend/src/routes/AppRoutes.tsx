@@ -5,6 +5,8 @@ import PublicRoute from "./PublicRoute";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import CuestionarioPersonal from "../pages/CuestionarioPersonal";
+import CuestionarioSalud from "../pages/CuestionarioSalud";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -23,6 +25,22 @@ export const AppRoutes: React.FC = () => {
           <PublicRoute>
             <Register />
           </PublicRoute>
+        }
+      />
+      <Route
+        path="/cuestionario-personal"
+        element={
+          <ProtectedRoute>
+            <CuestionarioPersonal />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cuestionario-salud"
+        element={
+          <ProtectedRoute>
+            <CuestionarioSalud />
+          </ProtectedRoute>
         }
       />
       <Route
