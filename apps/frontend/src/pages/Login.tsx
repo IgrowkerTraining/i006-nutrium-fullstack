@@ -22,7 +22,7 @@ const Login: React.FC = () => {
     try {
       const response = await api.login({ email, password });
       login(response.user);
-      navigate("/dashboard");
+      navigate("/cuestionario-personal");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
     } finally {
