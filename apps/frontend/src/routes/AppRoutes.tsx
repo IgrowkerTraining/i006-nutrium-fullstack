@@ -34,30 +34,27 @@ export const AppRoutes: React.FC = () => {
       />
       </Route>
       {/* Rutas privadas */}
-      {/* FALTA AÑADIR <ProtectedRoute> */}
-      <Route element={<AppLayout />}>
+      <Route element={
+        <ProtectedRoute>
+          <AppLayout />
+        </ProtectedRoute>
+        }>
       <Route
         path="/cuestionario-personal"
         element={
-          
             <CuestionarioPersonal />
-          
         }
       />
       <Route
         path="/cuestionario-salud"
         element={
-          
             <CuestionarioSalud />
-          
         }
       />
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
             <Dashboard />
-          </ProtectedRoute>
         }
       />
       </Route>
