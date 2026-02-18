@@ -7,10 +7,15 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
+import AppLayout from "../components/layout/AppLayout";
+import AuthLayout from "../components/layout/AuthLayout";
+
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
+      {/* Rutas públicas */}
+      <Route element={<AuthLayout />}>
       <Route
         path="/login"
         element={
@@ -27,6 +32,10 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
+      </Route>
+      {/* Rutas privadas */}
+      {/* FALTA AÑADIR <ProtectedRoute> */}
+      <Route element={<AppLayout />}>
       <Route
         path="/cuestionario-personal"
         element={
@@ -51,6 +60,8 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
+      </Route>
+
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
