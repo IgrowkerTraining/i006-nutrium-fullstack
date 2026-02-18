@@ -8,6 +8,7 @@ export const ROUTES = {
   MATCH: '/match',
   PERFIL: '/perfil',
   CALENDARIO: '/calendario',
+  RECUPERAR_PASSWORD: '/recuperar-password',
 } as const;
 
 export const API_ENDPOINTS = {

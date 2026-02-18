@@ -12,6 +12,7 @@ import AuthLayout from "../components/layout/AuthLayout";
 import Match from "../pages/Match";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
+import RecuperarPassword from "../pages/RecuperarPassword";
 
 
 export const AppRoutes: React.FC = () => {
@@ -36,6 +37,8 @@ export const AppRoutes: React.FC = () => {
         }
       />
       </Route>
+      <Route path="/recuperar-password" element={<RecuperarPassword />} />
+
       {/* Rutas privadas */}
       <Route element={
         <ProtectedRoute>
@@ -64,7 +67,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/match" element={<Match />} />
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/calendario" element={<Calendario />} />
-      
+
       </Route>
 
       <Route path="/" element={<Navigate to="/login" replace />} />

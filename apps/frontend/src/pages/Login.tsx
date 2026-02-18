@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
-import { User } from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 
@@ -138,12 +137,11 @@ const Login: React.FC = () => {
                 />
                 <span className="text-sm text-slate-400">Remember me</span>
               </label>
-              <button
-                type="button"
+              <Link to="/recuperar-password"
                 className="text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
               >
                 Forgot password?
-              </button>
+              </Link>
             </div>
 
             <Button type="submit" className="w-full mt-4" isLoading={isLoading}>
