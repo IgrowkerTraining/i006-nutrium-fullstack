@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/nutrium-logo.svg";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { PasswordInput } from "../components/common/PasswordInput";
@@ -35,22 +36,9 @@ const Login: React.FC = () => {
   return (
     <AuthLayout>
     <div className="flex flex-col items-center mb-8">
-      <div className="w-12 h-12 bg-[#7ECD43] rounded-xl flex items-center justify-center mb-4 shadow-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-          className="w-7 h-7 text-white"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-          />
-        </svg>
-      </div>
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Nutrium" className="h-[75px]" />
+        </div>
 
       <h1 className="text-2xl font-semibold text-slate-900 mb-1">
         Bienvenido/a
