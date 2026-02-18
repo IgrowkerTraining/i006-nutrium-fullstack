@@ -5,6 +5,9 @@ export const ROUTES = {
   HOME: '/',
   CUESTIONARIO_PERSONAL: '/cuestionario-personal',
   CUESTIONARIO_SALUD: '/cuestionario-salud',
+  MATCH: '/match',
+  PERFIL: '/perfil',
+  CALENDARIO: '/calendario',
 } as const;
 
 export const API_ENDPOINTS = {
