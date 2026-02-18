@@ -28,7 +28,7 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5
+            w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5
             ${icon ? "pl-10" : ""} 
             text-slate-800 placeholder:text-slate-400
             focus:outline-none focus:ring-2 focus:ring-[#7ECD43]/40 focus:border-[#7ECD43]
