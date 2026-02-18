@@ -7,8 +7,6 @@ const CuestionarioSalud: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    
-    <Layout>
       
       <div>
         
@@ -26,7 +24,6 @@ const CuestionarioSalud: React.FC = () => {
 
 
       </div>
-    </Layout>
 
   );
 };

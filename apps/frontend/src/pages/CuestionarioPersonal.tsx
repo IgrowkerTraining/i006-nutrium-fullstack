@@ -7,7 +7,6 @@ const CuestionarioPersonal: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout>
       <div>
         <h1>Cuestionario Personal</h1>
         
@@ -15,7 +14,6 @@ const CuestionarioPersonal: React.FC = () => {
           Siguiente
         </Button>
       </div>
-    </Layout>
 
   );
 };
