@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { User } from "../types";
 import { Button } from "../components/common/Button";
 import { getAIGreeting } from "../services/service";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
-import Header from "../components/layout/Header";
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -30,10 +28,7 @@ const Dashboard: React.FC = () => {
   }, [user?.name]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header isBackendOnline={isBackendOnline} user={user} logout={logout}/>
-
-
+    <>
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10">
         <header className="mb-10">
           <h2 className="text-3xl font-bold text-white mb-2">{greeting}</h2>
@@ -157,7 +152,7 @@ const Dashboard: React.FC = () => {
           Log Out of Nexus
         </Button>
       </div>
-    </div>
+    </>
   );
 };
 
