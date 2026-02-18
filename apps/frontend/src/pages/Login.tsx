@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
+import { PasswordInput } from "../components/common/PasswordInput";
 import { User } from "../types";
 import { api } from "../services/api";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth"; 
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -104,10 +105,9 @@ const Login: React.FC = () => {
               }
             />
 
-            <Input
+            <PasswordInput
               label="Password"
               placeholder="••••••••"
-              type="password"
               required
               disabled={isLoading}
               value={password}
