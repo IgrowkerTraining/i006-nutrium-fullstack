@@ -5,10 +5,21 @@ import PublicRoute from "./PublicRoute";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import CuestionarioPersonal from "../pages/CuestionarioPersonal";
+import CuestionarioSalud from "../pages/CuestionarioSalud";
+import AppLayout from "../components/layout/AppLayout";
+import {AuthLayout} from "../components/layout/AuthLayout";
+import Match from "../pages/Match";
+import Perfil from "../pages/Perfil";
+import Calendario from "../pages/Calendario";
+import RecuperarPassword from "../pages/RecuperarPassword";
+
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
+      {/* Rutas públicas */}
+      <Route element={<AuthLayout />}>
       <Route
         path="/login"
         element={
@@ -25,14 +36,40 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
+      </Route>
+      <Route path="/recuperar-password" element={<RecuperarPassword />} />
+
+      {/* Rutas privadas */}
+      <Route element={
+        <ProtectedRoute>
+          <AppLayout />
+        </ProtectedRoute>
+        }>
+      <Route
+        path="/cuestionario-personal"
+        element={
+            <CuestionarioPersonal />
+        }
+      />
+      <Route
+        path="/cuestionario-salud"
+        element={
+            <CuestionarioSalud />
+        }
+      />
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
             <Dashboard />
-          </ProtectedRoute>
         }
       />
+
+      <Route path="/match" element={<Match />} />
+      <Route path="/perfil" element={<Perfil />} />
+      <Route path="/calendario" element={<Calendario />} />
+
+      </Route>
+
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
