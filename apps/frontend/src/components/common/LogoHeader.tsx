@@ -12,7 +12,7 @@ export const LogoHeader: React.FC<LogoHeaderProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center mb-8">
-      <img src={logo} alt="Nutrium" className="h-8 mb-4" />
+      <img src={logo} alt="Nutrium" className="h-16 mb-4" />
 
       {title && (
         <h1 className="text-xl font-semibold text-slate-900">
