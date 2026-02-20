@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/nutrium-logo.svg";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { PasswordInput } from "../components/common/PasswordInput";
 import { AuthLayout } from "../components/layout/AuthLayout";
+import { LogoHeader } from "../components/common/LogoHeader";
 import { User } from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth"; 
@@ -35,19 +35,10 @@ const Login: React.FC = () => {
 
   return (
     <AuthLayout>
-    <div className="flex flex-col items-center mb-8">
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Nutrium" className="h-[75px]" />
-        </div>
-
-      <h1 className="text-2xl font-semibold text-slate-900 mb-1">
-        Bienvenido/a
-      </h1>
-      <p className="text-slate-500 text-sm text-center">
-        Ingresa tus datos para continuar
-      </p>
-    </div>
-
+      <LogoHeader 
+        title="Bienvenido/a"
+        subtitle="Ingresa tus datos para continuar"
+      />
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="bg-red-100 border border-red-300 text-red-600 text-sm p-3 rounded-lg">
