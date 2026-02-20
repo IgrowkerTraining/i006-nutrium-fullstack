@@ -8,18 +8,18 @@ import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
 import AppLayout from "../components/layout/AppLayout";
-import {AuthLayout} from "../components/layout/AuthLayout";
 import Match from "../pages/Match";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
+import LandingAcceso from "../pages/LandingAcceso";
+
 
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route element={<AuthLayout />}>
       <Route
         path="/login"
         element={
@@ -36,8 +36,8 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
-      </Route>
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
+      <Route path="/landing-acceso" element={<LandingAcceso />} />
 
       {/* Rutas privadas */}
       <Route element={
