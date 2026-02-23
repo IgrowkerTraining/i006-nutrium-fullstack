@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -9,7 +10,10 @@ class UserService {
    * @throws {Error} Si el email ya existe
    */
   async createUser(userData) {
-    const { email, password, name, role } = userData;
+    const { email: rawEmail, password, name, role } = userData;
+
+    // Normalizar email: eliminar espacios y convertir a minúsculas
+    const email = rawEmail.trim().toLowerCase();
 
     // Verificar si el email ya existe
     const existingUser = await User.findOne({ where: { email } });
@@ -19,13 +23,22 @@ class UserService {
       throw error;
     }
 
-    // Crear usuario con password_hash en lugar de password
-    const newUser = await User.create({
-      email,
-      password_hash: password, // beforeCreate hook de User hasheará esto automáticamente
-      name,
-      role: role || 'patient',
-    });
+    // Hashear la contraseña con bcrypt (10 rondas de sal)
+    // El hook beforeCreate del modelo también hashea, pero hacerlo aquí
+    // hace explícita la responsabilidad de seguridad en la capa de servicio.
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear usuario – password_hash ya viene hasheado, se deshabilita el hook
+    // pasando el hash directamente para evitar doble hashing.
+    const newUser = await User.create(
+      {
+        email,
+        password_hash: hashedPassword,
+        name,
+        role: role || 'patient',
+      },
+      { hooks: false } // ← evita que beforeCreate vuelva a hashear
+    );
 
     return newUser.toJSON();
   }
@@ -38,8 +51,11 @@ class UserService {
    * @throws {Error} Si las credenciales son inválidas
    */
   async loginUser(email, password) {
+    // Normalizar email antes de buscar
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Buscar usuario por email
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email: normalizedEmail } });
     if (!user) {
       const error = new Error('Email o contraseña inválidos');
       error.statusCode = 401;

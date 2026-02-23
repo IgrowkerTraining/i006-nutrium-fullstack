@@ -22,7 +22,7 @@ NutritionistProfile.init(
 
     // FK al usuario propietario del perfil
     user_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.UUID,
       allowNull: false,
       unique: true,  // Un usuario solo puede tener un perfil de nutricionista
     },

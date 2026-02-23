@@ -51,12 +51,45 @@ class NutritionistController {
    *   "bio": "Especialista en nutrición deportiva...",
    *   "modality": "online" | "presencial" | "hibrida",
    *   "years_of_experience": 5,
-   *   "tag_ids": ["uuid-tag-1", "uuid-tag-2"]   ← opcional
+   *   "tag_ids": [1, 2]   ← requerido
    * }
    */
   async upsertProfile(req, res) {
     try {
-      const { license_number, bio, modality, years_of_experience, tag_ids = [] } = req.body;
+      const { license_number, bio, modality, years_of_experience, tag_ids } = req.body;
+
+      // Validar campos requeridos
+      const errors = [];
+
+      if (!license_number || String(license_number).trim() === '') {
+        errors.push({ field: 'license_number', message: 'license_number es requerido' });
+      }
+
+      if (!bio || String(bio).trim() === '') {
+        errors.push({ field: 'bio', message: 'bio es requerido' });
+      }
+
+      if (!modality || String(modality).trim() === '') {
+        errors.push({ field: 'modality', message: 'modality es requerida (online | presencial | hibrida)' });
+      }
+
+      if (years_of_experience === undefined || years_of_experience === null || years_of_experience === '') {
+        errors.push({ field: 'years_of_experience', message: 'years_of_experience es requerido' });
+      } else if (isNaN(Number(years_of_experience)) || Number(years_of_experience) < 0) {
+        errors.push({ field: 'years_of_experience', message: 'years_of_experience debe ser un número mayor o igual a 0' });
+      }
+
+      if (!tag_ids || !Array.isArray(tag_ids) || tag_ids.length === 0) {
+        errors.push({ field: 'tag_ids', message: 'tag_ids es requerido y debe ser un array con al menos un elemento' });
+      }
+
+      if (errors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Faltan campos requeridos',
+          errors,
+        });
+      }
 
       const { profile, created } = await nutritionistService.upsertProfile(
         req.user.id,
@@ -88,10 +121,12 @@ class NutritionistController {
    * Body esperado:
    * {
    *   "slots": [
-   *     { "day_of_week": "lunes",    "start_time": "09:00", "end_time": "13:00" },
-   *     { "day_of_week": "miércoles","start_time": "14:00", "end_time": "18:00" }
+   *     { "day_of_week": 1, "start_time": "09:00", "end_time": "13:00" },
+   *     { "day_of_week": 3, "start_time": "14:00", "end_time": "18:00" }
    *   ]
    * }
+   * Convención day_of_week: 0=Domingo, 1=Lunes, 2=Martes, 3=Miércoles,
+   *                          4=Jueves, 5=Viernes, 6=Sábado
    */
   async setAvailability(req, res) {
     try {
