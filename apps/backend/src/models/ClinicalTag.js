@@ -12,8 +12,8 @@ class ClinicalTag extends Model {}
 ClinicalTag.init(
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
 
@@ -27,11 +27,10 @@ ClinicalTag.init(
       },
     },
 
-    // Slug para URLs y búsquedas: "diabetes", "deportiva"
-    slug: {
+    // Categoría de la especialidad clínica: "endocrinología", "deportiva"
+    category: {
       type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
+      allowNull: true,
     },
   },
   {

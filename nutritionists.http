@@ -1,153 +1,54 @@
-# ============================================================
-# Nutriom – Módulo de Nutricionistas  |  REST Client (.http)
-# Instala la extensión "REST Client" (humao.rest-client) en VS Code
-# para ejecutar cada petición con el botón "Send Request".
-# ============================================================
+### Variables Globales
+@baseUrl = http://localhost:3000/api/v1
+# Reemplaza ESTE_TOKEN con un token JWT real generado en el endpoint de login de tu compañero
+@token = ESTE_TOKEN
 
-@baseUrl  = http://localhost:3000/api/v1
-@tokenNut = REEMPLAZA_CON_TU_JWT_DE_NUTRICIONISTA
+---
 
-# ─────────────────────────────────────────────────────────────
-# PASO 0 – Obtener token (registrar + login como nutricionista)
-# ─────────────────────────────────────────────────────────────
-
-### 0a. Registrar usuario con role nutritionist
-# @name register
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "name": "Dra. Laura Méndez",
-  "email": "laura.mendez@nutrium.com",
-  "password": "Seguro123!",
-  "role": "nutritionist"
-}
-
-###
-
-### 0b. Login – guarda el token retornado en @tokenNut arriba
-# @name login
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "laura.mendez@nutrium.com",
-  "password": "Seguro123!"
-}
-
-###
-
-
-# ─────────────────────────────────────────────────────────────
-# ENDPOINT 1 – PUT /api/v1/nutritionists/profile
-# Crear el perfil por primera vez (responde 201 Created)
-# ─────────────────────────────────────────────────────────────
-### Crear perfil del nutricionista autenticado
-PUT {{baseUrl}}/nutritionists/profile
-Content-Type: application/json
-Authorization: Bearer {{tokenNut}}
-
-{
-  "license_number": "MP-98765",
-  "bio": "Nutricionista deportiva con más de 8 años formando atletas de alto rendimiento.",
-  "modality": "hibrida",
-  "years_of_experience": 8,
-  "tag_ids": []
-}
-
-###
-
-
-# ─────────────────────────────────────────────────────────────
-# ENDPOINT 1b – PUT /api/v1/nutritionists/profile
-# Actualizar perfil existente + asignar tags (responde 200 OK)
-# Reemplaza <TAG_UUID_1> y <TAG_UUID_2> por IDs reales de clinical_tags
-# ─────────────────────────────────────────────────────────────
-### Actualizar perfil y asignar tags clínicos
-PUT {{baseUrl}}/nutritionists/profile
-Content-Type: application/json
-Authorization: Bearer {{tokenNut}}
-
-{
-  "bio": "Actualización: también ofrezco consultas de nutrición pediátrica.",
-  "modality": "online",
-  "years_of_experience": 9,
-  "tag_ids": [
-    "<TAG_UUID_DEPORTIVA>",
-    "<TAG_UUID_PEDIATRICA>"
-  ]
-}
-
-###
-
-
-# ─────────────────────────────────────────────────────────────
-# ENDPOINT 2 – GET /api/v1/nutritionists/profile
-# Obtener perfil autenticado con tags y disponibilidad
-# ─────────────────────────────────────────────────────────────
-### Obtener perfil propio (incluye tags y horarios)
+### 1. Obtener Perfil del Nutricionista (Debe dar 404 si aún no existe)
 GET {{baseUrl}}/nutritionists/profile
-Authorization: Bearer {{tokenNut}}
+Authorization: Bearer {{token}}
 
-###
+---
 
-
-# ─────────────────────────────────────────────────────────────
-# ENDPOINT 3 – POST /api/v1/nutritionists/availability
-# Gestionar franjas horarias semanales
-# El array REEMPLAZA todos los horarios activos del nutricionista
-# ─────────────────────────────────────────────────────────────
-### Establecer disponibilidad semanal
-POST {{baseUrl}}/nutritionists/availability
+### 2. Crear/Actualizar Perfil (Upsert)
+PUT {{baseUrl}}/nutritionists/profile
+Authorization: Bearer {{token}}
 Content-Type: application/json
-Authorization: Bearer {{tokenNut}}
+
+{
+  "license_number": "MN-987654",
+  "bio": "Especialista en nutrición deportiva y recomposición corporal.",
+  "modality": "online",
+  "years_of_experience": 8,
+  "tag_ids": [1, 2] 
+}
+# Nota: Los tag_ids son enteros (1, 2). Asegúrate de que existan en la tabla clinical_tags.
+
+---
+
+### 3. Establecer Disponibilidad (Agenda)
+POST {{baseUrl}}/nutritionists/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
 
 {
   "slots": [
-    { "day_of_week": "lunes",      "start_time": "09:00", "end_time": "13:00" },
-    { "day_of_week": "lunes",      "start_time": "15:00", "end_time": "18:00" },
-    { "day_of_week": "miércoles",  "start_time": "09:00", "end_time": "13:00" },
-    { "day_of_week": "viernes",    "start_time": "10:00", "end_time": "14:00" }
+    { 
+      "day_of_week": 1, 
+      "start_time": "09:00", 
+      "end_time": "13:00" 
+    },
+    { 
+      "day_of_week": 3, 
+      "start_time": "15:00", 
+      "end_time": "19:00" 
+    }
   ]
 }
+# Nota: day_of_week usa 1 (Lunes) y 3 (Miércoles).
 
-###
+---
 
-
-# ─────────────────────────────────────────────────────────────
-# ENDPOINT 4 – GET /api/v1/nutritionists  (PÚBLICO)
-# Sin token – lista nutricionistas con sus especialidades
-# ─────────────────────────────────────────────────────────────
-### Listar todos los nutricionistas (paginado)
+### 4. Listar Nutricionistas Públicamente (Sin Token)
 GET {{baseUrl}}/nutritionists?page=1&limit=10
-
-###
-
-
-### Filtrar nutricionistas por especialidad (slug del tag)
-GET {{baseUrl}}/nutritionists?tag=deportiva&page=1&limit=5
-
-###
-
-
-# ─────────────────────────────────────────────────────────────
-# EQUIVALENTES EN curl (para entornos sin REST Client)
-# ─────────────────────────────────────────────────────────────
-# Crear perfil:
-# curl -X PUT http://localhost:3000/api/v1/nutritionists/profile \
-#   -H "Content-Type: application/json" \
-#   -H "Authorization: Bearer <TOKEN>" \
-#   -d '{"license_number":"MP-98765","bio":"Mi bio","modality":"online","years_of_experience":5}'
-#
-# Establecer disponibilidad:
-# curl -X POST http://localhost:3000/api/v1/nutritionists/availability \
-#   -H "Content-Type: application/json" \
-#   -H "Authorization: Bearer <TOKEN>" \
-#   -d '{"slots":[{"day_of_week":"lunes","start_time":"09:00","end_time":"13:00"}]}'
-#
-# Obtener perfil:
-# curl http://localhost:3000/api/v1/nutritionists/profile \
-#   -H "Authorization: Bearer <TOKEN>"
-#
-# Listar nutricionistas (público):
-# curl "http://localhost:3000/api/v1/nutritionists?page=1&limit=10"

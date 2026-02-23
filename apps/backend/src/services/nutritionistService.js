@@ -26,7 +26,7 @@ class NutritionistService {
           model: ClinicalTag,
           as: 'tags',
           through: { attributes: [] }, // Oculta columnas de la tabla pivote
-          attributes: ['id', 'name', 'slug'],
+          attributes: ['id', 'name', 'category'],
         },
         {
           model: Availability,
@@ -130,9 +130,17 @@ class NutritionistService {
      * lo que se envió, sin necesidad de comparar manualmente.
      */
     if (tagIds.length > 0) {
+      // Validar que todos los IDs sean números enteros positivos
+      const allNumeric = tagIds.every((id) => Number.isInteger(Number(id)) && Number(id) > 0);
+      if (!allNumeric) {
+        const error = new Error('tagIds debe ser un array de IDs numéricos enteros positivos');
+        error.statusCode = 400;
+        throw error;
+      }
+
       const tags = await ClinicalTag.findAll({ where: { id: tagIds } });
       if (tags.length !== tagIds.length) {
-        const error = new Error('Uno o más tagIds son inválidos');
+        const error = new Error('Uno o más tagIds son inválidos o no existen');
         error.statusCode = 400;
         throw error;
       }
@@ -172,15 +180,16 @@ class NutritionistService {
     }
 
     // Validar estructura de cada slot
-    const VALID_DAYS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    // day_of_week: 0=Domingo, 1=Lunes, ..., 6=Sábado
     for (const slot of slots) {
-      if (!slot.day_of_week || !slot.start_time || !slot.end_time) {
-        const error = new Error('Cada slot debe tener day_of_week, start_time y end_time');
+      if (slot.day_of_week === undefined || slot.day_of_week === null || !slot.start_time || !slot.end_time) {
+        const error = new Error('Cada slot debe tener day_of_week (0-6), start_time y end_time');
         error.statusCode = 400;
         throw error;
       }
-      if (!VALID_DAYS.includes(slot.day_of_week)) {
-        const error = new Error(`day_of_week "${slot.day_of_week}" no es válido`);
+      const day = Number(slot.day_of_week);
+      if (!Number.isInteger(day) || day < 0 || day > 6) {
+        const error = new Error(`day_of_week "${slot.day_of_week}" no es válido. Debe ser un entero entre 0 (Domingo) y 6 (Sábado)`);
         error.statusCode = 400;
         throw error;
       }
@@ -230,8 +239,8 @@ class NutritionistService {
   async listNutritionists({ page = 1, limit = 10, tag } = {}) {
     const offset = (page - 1) * limit;
 
-    // Construir condición de filtro por tag (opcional)
-    const tagWhere = tag ? { slug: tag } : undefined;
+    // Construir condición de filtro por tag (opcional, filtra por category)
+    const tagWhere = tag ? { category: tag } : undefined;
 
     const { count, rows } = await NutritionistProfile.findAndCountAll({
       include: [
@@ -244,7 +253,7 @@ class NutritionistService {
           model: ClinicalTag,
           as: 'tags',
           through: { attributes: [] },
-          attributes: ['id', 'name', 'slug'],
+          attributes: ['id', 'name', 'category'],
           // Si se filtra por tag, solo incluir perfiles que tengan ese tag
           ...(tagWhere && { where: tagWhere, required: true }),
         },

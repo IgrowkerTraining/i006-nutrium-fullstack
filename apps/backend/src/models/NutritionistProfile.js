@@ -15,14 +15,14 @@ class NutritionistProfile extends Model {}
 NutritionistProfile.init(
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
       primaryKey: true,
     },
 
     // FK al usuario propietario del perfil
     user_id: {
-      type: DataTypes.UUID,
+      type: DataTypes.BIGINT,
       allowNull: false,
       unique: true,  // Un usuario solo puede tener un perfil de nutricionista
     },
