@@ -156,15 +156,16 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Body:**
-```json
-{
-  "license_number": "MP-12345",
-  "bio": "Especialista en nutrición deportiva y recomposición corporal.",
-  "modality": "online",
-  "years_of_experience": 5,
-  "tag_ids": [1, 2]
-}
+- **Headers:** `Authorization: Bearer <token_jwt>`
+- **Body:**
+  ```json
+  {
+    "license_number": "MN-102030", // Requerido
+    "bio": "Especialista en recomposición corporal.", // Requerido
+    "modality": "online", // Opciones válidas: "online", "presencial", "hibrida"
+    "years_of_experience": 5, // Número entero >= 0
+    "tag_ids": [1, 2, 8] // Array de IDs enteros referenciando a `clinical_tags`
+  }
 ```
 
 | Campo                | Tipo    | Requerido | Descripción                                              |
