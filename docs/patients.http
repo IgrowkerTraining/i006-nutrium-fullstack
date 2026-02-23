@@ -1,0 +1,181 @@
+### Patient Module - Testing File (.http)
+### Usar con REST Client extension en VS Code
+### Extensión: humao.rest-client
+
+### Variables globales
+@baseUrl = http://localhost:3000/api/v1
+@token = user-123
+@authHeader = Authorization: Bearer {{token}}
+
+---
+
+### ============ 1. PROFILE ENDPOINTS ============
+
+### GET Profile - Obtener perfil del paciente
+GET {{baseUrl}}/patients/profile
+{{authHeader}}
+Content-Type: application/json
+
+###
+
+### POST Profile - Crear perfil completo
+POST {{baseUrl}}/patients/profile
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Juan Pérez García",
+  "fechaNacimiento": "1990-03-15",
+  "pais": "España",
+  "ciudad": "Madrid",
+  "modalidad": "Virtual",
+  "disponibilidad": "Mañana",
+  "objetivo": "Pérdida de peso"
+}
+
+###
+
+### POST Profile - Actualizar solo la ciudad
+POST {{baseUrl}}/patients/profile
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Juan Pérez García",
+  "fechaNacimiento": "1990-03-15",
+  "pais": "España",
+  "ciudad": "Barcelona",
+  "modalidad": "Virtual",
+  "disponibilidad": "Mañana",
+  "objetivo": "Pérdida de peso"
+}
+
+###
+
+### POST Profile - Cambiar modalidad a Presencial
+POST {{baseUrl}}/patients/profile
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Juan Pérez García",
+  "fechaNacimiento": "1990-03-15",
+  "pais": "España",
+  "ciudad": "Barcelona",
+  "modalidad": "Presencial",
+  "disponibilidad": "Tarde",
+  "objetivo": "Mejorar salud digestiva"
+}
+
+###
+
+### POST Profile - Objetivo: Ganancia de masa muscular
+POST {{baseUrl}}/patients/profile
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "María García López",
+  "fechaNacimiento": "1985-07-20",
+  "pais": "España",
+  "ciudad": "Valencia",
+  "modalidad": "Mixto",
+  "disponibilidad": "Tarde",
+  "objetivo": "Ganancia de masa muscular"
+}
+
+###
+
+### ============ 2. TAGS ENDPOINTS ============
+
+### GET Tags - Obtener condiciones de salud
+GET {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+###
+
+### POST Tags - Agregar condiciones de salud
+POST {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "condiciones": [
+    "SIBO",
+    "Disbiosis intestinal",
+    "Intolerancia a la lactosa"
+  ],
+  "otraCondicion": "Sensibilidad a aditivos alimentarios"
+}
+
+###
+
+### POST Tags - Diferentes condiciones
+POST {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "condiciones": [
+    "Síndrome de intestino irritable (SII / IBS)",
+    "Intolerancia al gluten",
+    "Permeabilidad intestinal aumentada"
+  ],
+  "otraCondicion": "Alergias a frutos secos"
+}
+
+###
+
+### POST Tags - Solo una condición
+POST {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "condiciones": ["Estreñimiento crónico funcional"],
+  "otraCondicion": null
+}
+
+###
+
+### POST Tags - Todas las condiciones disponibles
+POST {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "condiciones": [
+    "SIBO",
+    "Disbiosis intestinal",
+    "Síndrome de intestino irritable (SII / IBS)",
+    "Intolerancia a la lactosa",
+    "Intolerancia al gluten",
+    "Sobrecrecimiento bacteriano colónico",
+    "Sobrecrecimiento de levaduras (Candida)",
+    "Parasitosis intestinal",
+    "Inflamación intestinal de bajo grado",
+    "Permeabilidad intestinal aumentada",
+    "Alteraciones post-antibióticos",
+    "Estreñimiento crónico funcional",
+    "Diarrea funcional crónica",
+    "Crecimiento bacteriano intestinal distal",
+    "Desequilibrio de la microbiota intestinal",
+    "Fermentación intestinal excesiva"
+  ],
+  "otraCondicion": "Todas las condiciones de salud registradas"
+}
+
+###
+
+### POST Tags - Solo observaciones (sin condiciones)
+POST {{baseUrl}}/patients/tags
+{{authHeader}}
+Content-Type: application/json
+
+{
+  "condiciones": [],
+  "otraCondicion": "Paciente con buena salud general, sin condiciones diagnosticadas"
+}
+
+###
