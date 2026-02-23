@@ -14,7 +14,7 @@ import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
 import LandingAcceso from "../pages/LandingAcceso";
 import TerminosYCondiciones from "../pages/TerminosYCondiciones";
-
+import HomePage from "../pages/HomePage";
 
 
 
@@ -22,6 +22,14 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
+      <Route 
+      path="/home-page" 
+      element={
+        <PublicRoute>
+          <HomePage />
+        </PublicRoute>
+      } 
+      />
       <Route
         path="/login"
         element={
@@ -75,7 +83,7 @@ export const AppRoutes: React.FC = () => {
 
       </Route>
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/home-page" replace />} />
     </Routes>
   );
 };
