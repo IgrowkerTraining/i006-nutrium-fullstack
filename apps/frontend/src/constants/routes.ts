@@ -3,6 +3,14 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   HOME: '/',
+  CUESTIONARIO_PERSONAL: '/cuestionario-personal',
+  CUESTIONARIO_SALUD: '/cuestionario-salud',
+  MATCH: '/match',
+  PERFIL: '/perfil',
+  CALENDARIO: '/calendario',
+  RECUPERAR_PASSWORD: '/recuperar-password',
+  LANDING_ACCESO: '/landing-acceso',
+  TERMINOS_Y_CONDICIONES: '/terminos-y-condiciones',
 } as const;
 
 export const API_ENDPOINTS = {

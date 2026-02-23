@@ -14,9 +14,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Layout>
       <AppRoutes />
-    </Layout>
   );
 };
 
