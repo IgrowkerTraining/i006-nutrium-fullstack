@@ -9,7 +9,7 @@ export const mockPatient: Patient = {
   role: "patient",
   fullName: "Iago Lema",
   email: "paciente1@email.com",
-  avatarUrl: "https://i.pravatar.cc/300?img=32",
+  avatarUrl: "https://previews.123rf.com/images/yupiramos/yupiramos1705/yupiramos170514716/77987175-young-man-profile-icon-vector-illustration-graphic-design.avif",
 
   birthDate: "1993-07-23",
   country: "España",
@@ -31,7 +31,7 @@ export const mockNutritionist: Nutritionist = {
   role: "nutritionist",
   fullName: "Iago Lema",
   email: "nutricionista1@email.com",
-  avatarUrl: "https://i.pravatar.cc/300?img=47",
+  avatarUrl: "https://previews.123rf.com/images/yupiramos/yupiramos1705/yupiramos170514716/77987175-young-man-profile-icon-vector-illustration-graphic-design.avif",
 
   licenseNumber: "MP 4597",
   modality: "Mixto",

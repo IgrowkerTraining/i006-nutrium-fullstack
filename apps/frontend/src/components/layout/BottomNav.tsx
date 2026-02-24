@@ -38,7 +38,7 @@ export const BottomNav: React.FC = () => {
             <svg
             viewBox="0 4 33 25"
             className="w-[clamp(24px,7.7vw,48px)] h-auto"
-            fill="none"
+            fill="currentColor"
             stroke="currentColor"
             strokeWidth="2"
             >
