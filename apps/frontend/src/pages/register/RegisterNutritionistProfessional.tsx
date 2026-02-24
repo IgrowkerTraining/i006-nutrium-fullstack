@@ -21,11 +21,24 @@ const RegisterNutritionist: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  console.log("SUBMIT OK"); // ahora sí debería salir
-  navigate("/register/photo");
-};
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    //Validaciones mínimas
+    if (!form.matricula || !form.pais || !form.ciudad || !form.tituloHabilitante) {
+      console.log("Faltan campos");
+      return;
+    }
+
+    // Guardar
+    localStorage.setItem(
+      "nutrium_register_nutritionist_professional",
+      JSON.stringify(form)
+    );
+
+    // Ir a la foto
+    navigate("/register/photo");
+  };
 
   return (
     <AuthLayout>

@@ -6,20 +6,28 @@ import { Button } from "../../components/common/Button";
 const RegisterPhoto: React.FC = () => {
   const navigate = useNavigate();
 
-  const role = localStorage.getItem("nutrium_role");
-
   useEffect(() => {
+    const role = localStorage.getItem("nutrium_role");
     if (!role) {
       navigate("/landing-acceso", { replace: true });
     }
-  }, [role, navigate]);
+  }, [navigate]);
 
-  const handleContinue = () => {
+  const goNextByRole = () => {
+    const role = localStorage.getItem("nutrium_role");
+
     if (role === "nutritionist") {
-      navigate("/dashboard");
-    } else if (role === "patient") {
-      navigate("/dashboard");
+      navigate("/onboarding/nutritionist");
+      return;
     }
+
+    if (role === "patient") {
+      navigate("/onboarding/patient");
+      return;
+    }
+
+    // fallback si no hay role o es inválido
+    navigate("/landing-acceso", { replace: true });
   };
 
   return (
@@ -37,15 +45,11 @@ const RegisterPhoto: React.FC = () => {
         <p className="text-slate-400 mt-2">Tomar desde la cámara</p>
       </div>
 
-      <Button className="w-full mb-3" onClick={handleContinue}>
+      <Button className="w-full mb-3" onClick={goNextByRole}>
         Continuar
       </Button>
 
-      <Button
-        variant="secondary"
-        className="w-full"
-        onClick={handleContinue}
-      >
+      <Button variant="secondary" className="w-full" onClick={goNextByRole}>
         Omitir
       </Button>
     </AuthLayout>

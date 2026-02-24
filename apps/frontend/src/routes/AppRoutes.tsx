@@ -10,7 +10,8 @@ import Register from "../pages/Register";
 
 import RegisterNutritionistPersonal from "../pages/register/RegisterNutritionistPersonal";
 import RegisterNutritionistProfessional from "../pages/register/RegisterNutritionistProfessional";
-// import RegisterPatientPersonal from "../pages/register/RegisterPatientPersonal";
+import RegisterPatientPersonal from "../pages/register/RegisterPatientPersonal";
+import RegisterPatientHealth from "../pages/register/RegisterPatientHealth";
 import RegisterPhoto from "../pages/register/RegisterPhoto";
 
 import OnboardingPatient from "../pages/onboarding/OnboardingPatient";
@@ -78,14 +79,23 @@ export const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* <Route
+      <Route
         path="/register/patient/personal"
         element={
           <PublicRoute>
             <RegisterPatientPersonal />
           </PublicRoute>
         }
-      /> */}
+      />
+
+      <Route
+        path="/register/patient/health"
+        element={
+          <PublicRoute>
+            <RegisterPatientHealth />
+          </PublicRoute>
+        }
+      />
 
       <Route
         path="/onboarding/patient"
