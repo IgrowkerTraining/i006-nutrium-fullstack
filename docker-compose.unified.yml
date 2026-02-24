@@ -1,0 +1,188 @@
+version: "3.8"
+
+# =============================================================================
+# DOCKER COMPOSE UNIFICADO — Stack completo Nutrium
+# Ejecutar desde: i006-nutrium-fullstack/
+#   docker-compose -f docker-compose.unified.yml up --build
+#   docker-compose -f docker-compose.unified.yml --profile dev-tools up --build
+#
+# Requiere que i006-nutrium-ai esté clonado como hermano de este repo:
+#   proyecto/
+#     i006-nutrium-fullstack/   ← aquí estás
+#     i006-nutrium-ai/          ← debe existir
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # BASE DE DATOS 1 — Node.js / Fullstack
+  # Esquema de inicialización: ./docker-entrypoint-initdb.d/Nutriom.sql
+  # Puerto host: 5432
+  # ===========================================================================
+  db-node:
+    image: postgres:15-alpine
+    container_name: nutrium-db-node
+    environment:
+      POSTGRES_USER: nutrium_node_user
+      POSTGRES_PASSWORD: nutrium_node_password
+      POSTGRES_DB: nutrium_node_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_node_data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d/Nutriom.sql:/docker-entrypoint-initdb.d/Nutriom.sql:ro
+    networks:
+      - nutrium-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrium_node_user -d nutrium_node_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # BASE DE DATOS 2 — Python / IA
+  # Esquema de inicialización: ../init-db/ (raíz del proyecto)
+  # Puerto host: 5433  (evita colisión con db-node en 5432)
+  # ===========================================================================
+  db-ai:
+    image: postgres:15-alpine
+    container_name: nutrium-db-ai
+    environment:
+      POSTGRES_USER: nutrium_ai_user
+      POSTGRES_PASSWORD: nutrium_ai_password
+      POSTGRES_DB: nutrium_ai_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_ai_data:/var/lib/postgresql/data
+      - ../init-db:/docker-entrypoint-initdb.d:ro
+    networks:
+      - nutrium-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrium_ai_user -d nutrium_ai_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Backend Principal (Node.js + Express) → conecta a db-node ---
+  backend-node:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: nutrium-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://nutrium_node_user:nutrium_node_password@db-node:5432/nutrium_node_db
+      - DB_HOST=db-node
+      - DB_USER=nutrium_node_user
+      - DB_PASS=nutrium_node_password
+      - DB_NAME=nutrium_node_db
+      - DB_PORT=5432
+      - AI_SERVICE_URL=http://ai-service:8000/api/v1
+      - JWT_SECRET=${JWT_SECRET:-nutrium-jwt-secret-change-in-production}
+      - JWT_EXPIRES_IN=7d
+    volumes:
+      - ./apps/backend/src:/app/src
+      - ./apps/backend/package.json:/app/package.json
+    depends_on:
+      db-node:
+        condition: service_healthy
+    networks:
+      - nutrium-network
+    restart: unless-stopped
+    command: npm run dev
+
+  # --- Servicio de IA (Python/FastAPI + OpenRouter) → conecta a db-ai ---
+  ai-service:
+    build:
+      context: ../i006-nutrium-ai
+      dockerfile: Dockerfile
+    container_name: nutrium-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      - DB_HOST=db-ai
+      - DB_USER=nutrium_ai_user
+      - DB_PASS=nutrium_ai_password
+      - DB_NAME=nutrium_ai_db
+      - DB_PORT=5432
+      - DATABASE_URL=postgresql://nutrium_ai_user:nutrium_ai_password@db-ai:5432/nutrium_ai_db
+      - APP_NAME=Nutrium AI Service
+      - APP_VERSION=1.0.0
+      - DEBUG=${DEBUG:-false}
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
+    volumes:
+      - ../i006-nutrium-ai/app:/app/app
+      - ../i006-nutrium-ai/logs:/app/logs
+    depends_on:
+      db-ai:
+        condition: service_healthy
+    networks:
+      - nutrium-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # --- Frontend (React + Vite + TypeScript) ---
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: nutrium-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+      - VITE_AI_SERVICE_URL=http://localhost:8000/api/v1
+    volumes:
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/package.json:/app/package.json
+    depends_on:
+      - backend-node
+      - ai-service
+    networks:
+      - nutrium-network
+    restart: unless-stopped
+    command: npm run dev
+
+  # --- PgAdmin (Opcional - Para desarrollo) ---
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nutrium-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nutrium.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - nutrium-network
+    depends_on:
+      - db-node
+      - db-ai
+    profiles:
+      - dev-tools
+
+volumes:
+  postgres_node_data:
+    driver: local
+  postgres_ai_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  nutrium-network:
+    driver: bridge
