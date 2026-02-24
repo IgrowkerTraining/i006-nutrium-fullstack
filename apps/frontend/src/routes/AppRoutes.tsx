@@ -13,6 +13,8 @@ import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
 import LandingAcceso from "../pages/LandingAcceso";
+import TerminosYCondiciones from "../pages/TerminosYCondiciones";
+
 
 
 
@@ -38,6 +40,9 @@ export const AppRoutes: React.FC = () => {
       />
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       <Route path="/landing-acceso" element={<LandingAcceso />} />
+       <Route
+        path="/terminos-y-condiciones"
+        element={<TerminosYCondiciones />}/>
 
       {/* Rutas privadas */}
       <Route element={
