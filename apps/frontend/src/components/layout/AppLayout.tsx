@@ -38,7 +38,7 @@ const AppLayout: React.FC = () => {
     <div className="min-h-screen bg-[#F8FFF3] flex flex-col">
       <HeaderNav showBack={showBack} />
 
-      <main className="flex-1 pb-24">
+      <main className="flex-1 pb-6">
         <Outlet />
       </main>
 

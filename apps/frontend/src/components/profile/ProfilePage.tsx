@@ -26,7 +26,7 @@ export const ProfilePage: React.FC<Props> = ({
 
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
 
-        <section className="flex justify-center mx-6 mb-6">
+        <section className="flex justify-center mx-6 my-[clamp(43px,10.94vw,80px)]">
           <img
             src={profile.avatarUrl}
             alt={profile.fullName}
