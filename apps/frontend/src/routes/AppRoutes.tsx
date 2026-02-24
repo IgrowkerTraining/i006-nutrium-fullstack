@@ -11,6 +11,7 @@ import Register from "../pages/Register";
 import RegisterNutritionistPersonal from "../pages/register/RegisterNutritionistPersonal";
 import RegisterNutritionistProfessional from "../pages/register/RegisterNutritionistProfessional";
 // import RegisterPatientPersonal from "../pages/register/RegisterPatientPersonal";
+import RegisterPhoto from "../pages/register/RegisterPhoto";
 
 import OnboardingPatient from "../pages/onboarding/OnboardingPatient";
 import OnboardingNutritionist from "../pages/onboarding/OnboardingNutritionist";
@@ -64,6 +65,15 @@ export const AppRoutes: React.FC = () => {
         element={
           <PublicRoute>
             <RegisterNutritionistProfessional />
+          </PublicRoute>
+        }
+      />
+      
+      <Route
+        path="/register/photo"
+        element={
+          <PublicRoute>
+            <RegisterPhoto />
           </PublicRoute>
         }
       />

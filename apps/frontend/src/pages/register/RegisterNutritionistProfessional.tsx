@@ -21,16 +21,10 @@ const RegisterNutritionist: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Si tu Select devuelve e.target.value, cambia esto
-  const handleSelect = (name: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: llamada API cuando la tengáis
     console.log("REGISTER NUTRI:", form);
-    // navigate("/onboarding/nutritionist"); o donde toque
+    navigate("/register/photo");
   };
 
   return (
@@ -52,8 +46,10 @@ const RegisterNutritionist: React.FC = () => {
 
         <Select
           label="País*"
+          name="pais"
+          required
           value={form.pais}
-          onChange={(value: string) => handleSelect("pais", value)}
+          onChange={(e) => setForm((p) => ({ ...p, pais: e.target.value }))}
           options={[
             { label: "Elige una opción", value: "" },
             { label: "Argentina", value: "AR" },
