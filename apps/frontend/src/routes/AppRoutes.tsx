@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import { useAuth } from "../hooks/useAuth";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
@@ -16,6 +17,23 @@ import RecuperarPassword from "../pages/RecuperarPassword";
 import LandingAcceso from "../pages/LandingAcceso";
 import TerminosYCondiciones from "../pages/TerminosYCondiciones";
 import HomePage from "../pages/HomePage";
+import MatchNutriList from "../pages/MatchNutriList";
+import MatchPacienteList from "../pages/MatchPacienteList";
+
+
+const MatchIndexRedirect: React.FC = () => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return user.role === "nutritionist" ? (
+    <Navigate to="/match/paciente-list" replace />
+  ) : (
+    <Navigate to="/match/nutri-list" replace />
+  );
+};
 
 
 
@@ -83,6 +101,9 @@ export const AppRoutes: React.FC = () => {
 
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/calendario" element={<Calendario />} />
+      <Route path="/match" element={<MatchIndexRedirect />} />
+      <Route path="/match/nutri-list" element={<MatchNutriList />} />
+      <Route path="/match/paciente-list" element={<MatchPacienteList />} />
 
       </Route>
 
