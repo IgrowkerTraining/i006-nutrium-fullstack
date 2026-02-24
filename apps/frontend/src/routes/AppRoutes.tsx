@@ -8,7 +8,8 @@ import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
 import AppLayout from "../components/layout/AppLayout";
-import Match from "../pages/Match";
+import MatchPaciente from "../pages/MatchPaciente";
+import MatchNutricionista from "../pages/MatchNutricionista";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
@@ -51,7 +52,9 @@ export const AppRoutes: React.FC = () => {
       <Route
         path="/terminos-y-condiciones"
         element={<TerminosYCondiciones />}/>
-      <Route path="/match" element={<Match />} />
+      <Route path="/match-paciente" element={<MatchPaciente />} />
+      <Route path="/match-nutricionista" element={<MatchNutricionista />} />
+
 
       {/* Rutas privadas */}
       <Route element={
