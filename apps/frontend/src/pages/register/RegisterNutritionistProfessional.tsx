@@ -21,11 +21,11 @@ const RegisterNutritionist: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("REGISTER NUTRI:", form);
-    navigate("/register/photo");
-  };
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log("SUBMIT OK"); // ahora sí debería salir
+  navigate("/register/photo");
+};
 
   return (
     <AuthLayout>
