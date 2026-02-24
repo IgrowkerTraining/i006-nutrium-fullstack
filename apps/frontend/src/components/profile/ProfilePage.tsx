@@ -1,0 +1,51 @@
+import React from "react";
+import { ProfileFields } from "./ProfileFields";
+import { Button } from "../common/Button";
+import { Patient, Nutritionist } from "../../types";
+
+type Props = {
+  profile: Patient | Nutritionist;
+  onEdit: () => void;
+  onLogout: () => void;
+};
+
+export const ProfilePage: React.FC<Props> = ({
+  profile,
+  onEdit,
+  onLogout,
+}) => {
+  return (
+    <div className="flex flex-col">
+
+      <main className="flex-1 pb-24">
+        <section className="px-6">
+          <h2 className="text-xl font-semibold text-left">
+            Tu Perfil
+          </h2>
+        </section>
+
+        <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
+
+        <section className="flex justify-center mx-6 mb-6">
+          <img
+            src={profile.avatarUrl}
+            alt={profile.fullName}
+            className="w-[clamp(260px,85vw,600px)] h-auto aspect-[334/293] object-cover rounded-xl"
+          />
+        </section>
+
+        <ProfileFields profile={profile} />
+
+        <section className="flex flex-col gap-4 mx-6 mt-8">
+          <Button className="w-full rounded-2xl" onClick={onEdit}>
+            Editar
+          </Button>
+          <Button variant="outline" className="w-full rounded-2xl border-[#FE4E4A] text-[#FE4E4A] hover:bg-[#FE4E4A]/10" onClick={onLogout}>
+            Cerrar sesión
+          </Button>
+        </section>
+      </main>
+
+    </div>
+  );
+};

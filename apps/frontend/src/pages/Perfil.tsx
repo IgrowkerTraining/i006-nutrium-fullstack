@@ -1,11 +1,18 @@
 import React from "react";
+import { useAuth } from "../hooks/useAuth";
+import { ProfilePage } from "../components/profile/ProfilePage";
 
 const Perfil: React.FC = () => {
+  const { user, logout } = useAuth();
+
+  if (!user) return null;
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-white">Perfil</h1>
-      <p className="text-slate-400 mt-2">Próximamente</p>
-    </div>
+    <ProfilePage
+      profile={user}
+      onEdit={() => console.log("Editar")}
+      onLogout={logout}
+    />
   );
 };
 
