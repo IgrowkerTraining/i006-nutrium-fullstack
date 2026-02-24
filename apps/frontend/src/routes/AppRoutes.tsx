@@ -48,9 +48,10 @@ export const AppRoutes: React.FC = () => {
       />
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       <Route path="/landing-acceso" element={<LandingAcceso />} />
-       <Route
+      <Route
         path="/terminos-y-condiciones"
         element={<TerminosYCondiciones />}/>
+      <Route path="/match" element={<Match />} />
 
       {/* Rutas privadas */}
       <Route element={
@@ -77,7 +78,6 @@ export const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route path="/match" element={<Match />} />
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/calendario" element={<Calendario />} />
 
