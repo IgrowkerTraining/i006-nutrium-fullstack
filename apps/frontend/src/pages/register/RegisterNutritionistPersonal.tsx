@@ -8,6 +8,7 @@ import { PasswordInput } from "../../components/common/PasswordInput";
 import { Button } from "../../components/common/Button";
 import { Select } from "../../components/common/Select";
 import { BackButton } from "../../components/common/BackButton";
+import { api } from "../../services/api";
 
 type FormState = {
   fullName: string;
@@ -119,6 +120,13 @@ const RegisterNutritionistPersonal: React.FC = () => {
           disponibilidad: form.disponibilidad,
         })
       );
+
+      await api.register({
+        name: form.fullName,
+        email: form.email,
+        password: form.password,
+        role: "nutritionist",
+      });
 
       navigate("/register/nutritionist/professional");
     } catch (err: any) {

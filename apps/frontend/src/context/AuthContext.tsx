@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return;
   }
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.VITE_USE_MOCK_AUTH === "true") {
     const MOCK_ROLE: "patient" | "nutritionist" = "patient";
     
     const mockUser =

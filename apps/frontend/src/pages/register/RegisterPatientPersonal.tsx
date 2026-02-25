@@ -8,6 +8,7 @@ import { PasswordInput } from "../../components/common/PasswordInput";
 import { Select } from "../../components/common/Select";
 import { Button } from "../../components/common/Button";
 import { BackButton } from "../../components/common/BackButton";
+import { api } from "../../services/api";
 
 type FormState = {
   fullName: string;
@@ -129,6 +130,13 @@ const RegisterPatientPersonal: React.FC = () => {
           objetivo: form.objetivo,
         })
       );
+
+      await api.register({
+        name: form.fullName,
+        email: form.email,
+        password: form.password,
+        role: "patient",
+      });
 
       navigate("/register/patient/health");
     } catch (err: any) {

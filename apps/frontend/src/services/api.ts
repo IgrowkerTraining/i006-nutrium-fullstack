@@ -1,10 +1,19 @@
 import { User } from "../types";
 import { API_ENDPOINTS } from "../constants/routes";
 
+const readJsonSafely = async (response: Response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
 export const api = {
   async register(data: any): Promise<{ user: User; message: string }> {
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.REGISTER}`;
     const response = await fetch(
-      `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.REGISTER}`,
+      url,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -12,18 +21,31 @@ export const api = {
       },
     );
 
-    const result = await response.json();
+    const result = await readJsonSafely(response);
     if (!response.ok) {
-      throw new Error(result.error || "Registration failed");
+      console.error("API register error", {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        response: result,
+      });
+      throw new Error(
+        `${response.status} ${result?.message || response.statusText || "Registration failed"}`,
+      );
     }
-    return result;
+
+    return {
+      user: result?.data?.user,
+      message: result?.message,
+    };
   },
 
   async login(
     data: any,
   ): Promise<{ user: User; token: string; message: string }> {
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.LOGIN}`;
     const response = await fetch(
-      `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.LOGIN}`,
+      url,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,11 +53,24 @@ export const api = {
       },
     );
 
-    const result = await response.json();
+    const result = await readJsonSafely(response);
     if (!response.ok) {
-      throw new Error(result.error || "Login failed");
+      console.error("API login error", {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        response: result,
+      });
+      throw new Error(
+        `${response.status} ${result?.message || response.statusText || "Login failed"}`,
+      );
     }
-    return result;
+
+    return {
+      user: result?.data?.user,
+      token: result?.data?.token,
+      message: result?.message,
+    };
   },
 
   async checkHealth(): Promise<boolean> {
