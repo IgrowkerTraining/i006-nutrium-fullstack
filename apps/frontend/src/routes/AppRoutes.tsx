@@ -8,13 +8,14 @@ import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
 import AppLayout from "../components/layout/AppLayout";
-import Match from "../pages/Match";
+import MatchPaciente from "../pages/MatchPaciente";
+import MatchNutricionista from "../pages/MatchNutricionista";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
 import LandingAcceso from "../pages/LandingAcceso";
 import TerminosYCondiciones from "../pages/TerminosYCondiciones";
-
+import HomePage from "../pages/HomePage";
 
 
 
@@ -22,6 +23,14 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
+      <Route 
+      path="/home-page" 
+      element={
+        <PublicRoute>
+          <HomePage />
+        </PublicRoute>
+      } 
+      />
       <Route
         path="/login"
         element={
@@ -40,9 +49,12 @@ export const AppRoutes: React.FC = () => {
       />
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       <Route path="/landing-acceso" element={<LandingAcceso />} />
-       <Route
+      <Route
         path="/terminos-y-condiciones"
         element={<TerminosYCondiciones />}/>
+      <Route path="/match-paciente" element={<MatchPaciente />} />
+      <Route path="/match-nutricionista" element={<MatchNutricionista />} />
+
 
       {/* Rutas privadas */}
       <Route element={
@@ -69,13 +81,12 @@ export const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route path="/match" element={<Match />} />
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/calendario" element={<Calendario />} />
 
       </Route>
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/home-page" replace />} />
     </Routes>
   );
 };

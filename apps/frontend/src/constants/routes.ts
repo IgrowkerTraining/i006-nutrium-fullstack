@@ -5,12 +5,14 @@ export const ROUTES = {
   HOME: '/',
   CUESTIONARIO_PERSONAL: '/cuestionario-personal',
   CUESTIONARIO_SALUD: '/cuestionario-salud',
-  MATCH: '/match',
+  MATCH_PACIENTE: '/match-paciente',
+  MATCH_NUTRICIONISTA: '/match-nutricionista',
   PERFIL: '/perfil',
   CALENDARIO: '/calendario',
   RECUPERAR_PASSWORD: '/recuperar-password',
   LANDING_ACCESO: '/landing-acceso',
   TERMINOS_Y_CONDICIONES: '/terminos-y-condiciones',
+  HOME_PAGE: '/home-page',
 } as const;
 
 export const API_ENDPOINTS = {
