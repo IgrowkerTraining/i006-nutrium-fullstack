@@ -10,14 +10,15 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   isLoading,
   className = "",
-  ...props
+  type, // lo sacamos
+  disabled,
+  ...rest
 }) => {
   const baseStyles =
     "px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    primary:
-      "bg-[#7ECD43] hover:bg-[#6fbb3c] text-white shadow-lg",
+    primary: "bg-[#7ECD43] hover:bg-[#6fbb3c] text-white shadow-lg",
     secondary: "bg-gray-200 hover:bg-gray-300 text-gray-800",
     outline: "border border-[#7ECD43] text-[#7ECD43] hover:bg-[#7ECD43]/10",
     ghost: "hover:bg-gray-100 text-gray-700",
@@ -25,15 +26,13 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      type={type ?? "button"} // default seguro
       className={`${baseStyles} ${variants[variant]} ${className}`}
-      disabled={isLoading || props.disabled}
-      {...props}
+      disabled={isLoading || disabled}
+      {...rest}
     >
-      {isLoading ? (
-        <svg
-          className="animate-spin h-5 w-5 mr-2 text-white"
-          viewBox="0 0 24 24"
-        >
+      {isLoading ? ( 
+        <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
           <circle
             className="opacity-25"
             cx="12"
