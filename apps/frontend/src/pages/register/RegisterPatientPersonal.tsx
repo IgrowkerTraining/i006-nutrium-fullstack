@@ -7,6 +7,7 @@ import { Input } from "../../components/common/Input";
 import { PasswordInput } from "../../components/common/PasswordInput";
 import { Select } from "../../components/common/Select";
 import { Button } from "../../components/common/Button";
+import { BackButton } from "../../components/common/BackButton";
 
 type FormState = {
   fullName: string;
@@ -16,21 +17,15 @@ type FormState = {
   email: string;
   password: string;
   confirmPassword: string;
-
   modalidad: string;
   disponibilidad: string;
   objetivo: string;
 };
 
+const STORAGE_KEY = "nutrium_register_patient_personal";
+
 const RegisterPatientPersonal: React.FC = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const role = localStorage.getItem("nutrium_role");
-    if (role !== "patient") {
-      navigate("/landing-acceso", { replace: true });
-    }
-  }, [navigate]);
 
   const [form, setForm] = useState<FormState>({
     fullName: "",
@@ -48,6 +43,54 @@ const RegisterPatientPersonal: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const role = localStorage.getItem("nutrium_role");
+    if (role !== "patient") {
+      navigate("/landing-acceso", { replace: true });
+    }
+  }, [navigate]);
+
+  // Prefill SIN password
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      setForm((prev) => ({
+        ...prev,
+        ...data,
+        password: "",
+        confirmPassword: "",
+      }));
+    } catch {}
+  }, []);
+
+  // Autosave SIN password
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        fullName: form.fullName,
+        birthDate: form.birthDate,
+        country: form.country,
+        city: form.city,
+        email: form.email,
+        modalidad: form.modalidad,
+        disponibilidad: form.disponibilidad,
+        objetivo: form.objetivo,
+      })
+    );
+  }, [
+    form.fullName,
+    form.birthDate,
+    form.country,
+    form.city,
+    form.email,
+    form.modalidad,
+    form.disponibilidad,
+    form.objetivo,
+  ]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -57,24 +100,34 @@ const RegisterPatientPersonal: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    // Validaciones mínimas
     if (!form.fullName.trim()) return setError("Introduce tu nombre completo.");
     if (!form.birthDate.trim()) return setError("Introduce tu fecha de nacimiento.");
     if (!form.country) return setError("Selecciona tu país.");
     if (!form.city.trim()) return setError("Introduce tu ciudad.");
     if (!form.email.trim()) return setError("Introduce tu correo.");
-    if (form.password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres.");
-    if (form.password !== form.confirmPassword) return setError("Las contraseñas no coinciden.");
+    if (form.password.length < 6)
+      return setError("La contraseña debe tener al menos 6 caracteres.");
+    if (form.password !== form.confirmPassword)
+      return setError("Las contraseñas no coinciden.");
     if (!form.modalidad) return setError("Selecciona una modalidad.");
     if (!form.disponibilidad) return setError("Selecciona una disponibilidad.");
     if (!form.objetivo.trim()) return setError("Introduce tu objetivo.");
 
     setIsLoading(true);
-
     try {
+      // Guardamos SIN password
       localStorage.setItem(
-        "nutrium_register_patient_personal",
-        JSON.stringify(form)
+        STORAGE_KEY,
+        JSON.stringify({
+          fullName: form.fullName,
+          birthDate: form.birthDate,
+          country: form.country,
+          city: form.city,
+          email: form.email,
+          modalidad: form.modalidad,
+          disponibilidad: form.disponibilidad,
+          objetivo: form.objetivo,
+        })
       );
 
       navigate("/register/patient/health");
@@ -108,6 +161,10 @@ const RegisterPatientPersonal: React.FC = () => {
 
   return (
     <AuthLayout>
+      <div className="relative mb-4">
+        <BackButton />
+      </div>
+
       <LogoHeader
         title="Formulario Personal"
         subtitle="Usaremos esta información para conectarte con profesionales que se ajusten a tus preferencias."
@@ -120,121 +177,32 @@ const RegisterPatientPersonal: React.FC = () => {
           </div>
         )}
 
-        <Input
-          label="Nombre completo*"
-          name="fullName"
-          placeholder="Nombre completo"
-          required
-          disabled={isLoading}
-          value={form.fullName}
-          onChange={handleChange}
-        />
-
-        <Input
-          label="Fecha de nacimiento*"
-          name="birthDate"
-          placeholder="24/12/1991"
-          required
-          disabled={isLoading}
-          value={form.birthDate}
-          onChange={handleChange}
-        />
-
-        <Select
-          label="País*"
-          name="country"
-          required
-          disabled={isLoading}
-          value={form.country}
-          onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))}
-          options={countryOptions}
-        />
-
-        <Input
-          label="Ciudad*"
-          name="city"
-          placeholder="La Plata"
-          required
-          disabled={isLoading}
-          value={form.city}
-          onChange={handleChange}
-        />
-
-        <Input
-          label="Correo electrónico*"
-          name="email"
-          type="email"
-          placeholder="claragarcia@gmail.com"
-          required
-          disabled={isLoading}
-          value={form.email}
-          onChange={handleChange}
-        />
+        <Input label="Nombre completo*" name="fullName" required value={form.fullName} onChange={handleChange} />
+        <Input label="Fecha de nacimiento*" name="birthDate" required value={form.birthDate} onChange={handleChange} />
+        <Select label="País*" value={form.country} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} options={countryOptions} />
+        <Input label="Ciudad*" name="city" required value={form.city} onChange={handleChange} />
+        <Input label="Correo electrónico*" name="email" type="email" required value={form.email} onChange={handleChange} />
 
         <PasswordInput
           label="Contraseña*"
-          placeholder="••••••••"
           required
-          disabled={isLoading}
           value={form.password}
           onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
         />
 
         <PasswordInput
           label="Repita su contraseña*"
-          placeholder="••••••••"
           required
-          disabled={isLoading}
           value={form.confirmPassword}
-          onChange={(e) =>
-            setForm((p) => ({ ...p, confirmPassword: e.target.value }))
-          }
+          onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
         />
 
-        <Select
-          label="Modalidad*"
-          name="modalidad"
-          required
-          disabled={isLoading}
-          value={form.modalidad}
-          onChange={(e) => setForm((p) => ({ ...p, modalidad: e.target.value }))}
-          options={modalidadOptions}
-        />
-
-        <Select
-          label="Disponibilidad*"
-          name="disponibilidad"
-          required
-          disabled={isLoading}
-          value={form.disponibilidad}
-          onChange={(e) =>
-            setForm((p) => ({ ...p, disponibilidad: e.target.value }))
-          }
-          options={disponibilidadOptions}
-        />
-
-        <Input
-          label="Objetivo*"
-          name="objetivo"
-          placeholder="Perder peso / Ganar masa muscular"
-          required
-          disabled={isLoading}
-          value={form.objetivo}
-          onChange={handleChange}
-        />
+        <Select label="Modalidad*" value={form.modalidad} onChange={(e) => setForm((p) => ({ ...p, modalidad: e.target.value }))} options={modalidadOptions} />
+        <Select label="Disponibilidad*" value={form.disponibilidad} onChange={(e) => setForm((p) => ({ ...p, disponibilidad: e.target.value }))} options={disponibilidadOptions} />
+        <Input label="Objetivo*" name="objetivo" required value={form.objetivo} onChange={handleChange} />
 
         <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
           Continuar
-        </Button>
-
-        <Button
-          type="button"
-          variant="secondary"
-          className="w-full"
-          onClick={() => navigate("/login")}
-          disabled={isLoading}
-        >
-          Cancelar
         </Button>
 
         <p className="text-center text-sm text-slate-500">

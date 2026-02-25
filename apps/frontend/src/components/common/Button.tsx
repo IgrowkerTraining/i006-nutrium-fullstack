@@ -10,7 +10,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   isLoading,
   className = "",
-  type, // ✅ lo sacamos
+  type, // lo sacamos
   disabled,
   ...rest
 }) => {
@@ -26,12 +26,12 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      type={type ?? "button"} // ✅ default seguro
+      type={type ?? "button"} // default seguro
       className={`${baseStyles} ${variants[variant]} ${className}`}
       disabled={isLoading || disabled}
       {...rest}
     >
-      {isLoading ? (
+      {isLoading ? ( 
         <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
           <circle
             className="opacity-25"

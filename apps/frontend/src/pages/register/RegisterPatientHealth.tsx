@@ -6,27 +6,18 @@ import { LogoHeader } from "../../components/common/LogoHeader";
 import { Select } from "../../components/common/Select";
 import { Input } from "../../components/common/Input";
 import { Button } from "../../components/common/Button";
+import { BackButton } from "../../components/common/BackButton";
 
 type FormState = {
   condition: string;
   conditionDetails: string;
 };
 
+const STORAGE_KEY = "nutrium_register_patient_health";
+const PERSONAL_KEY = "nutrium_register_patient_personal";
+
 const RegisterPatientHealth: React.FC = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const role = localStorage.getItem("nutrium_role");
-    if (role !== "patient") {
-      navigate("/landing-acceso", { replace: true });
-      return;
-    }
-
-    const personal = localStorage.getItem("nutrium_register_patient_personal");
-    if (!personal) {
-      navigate("/register/patient/personal", { replace: true });
-    }
-  }, [navigate]);
 
   const [form, setForm] = useState<FormState>({
     condition: "",
@@ -35,6 +26,35 @@ const RegisterPatientHealth: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Guards
+  useEffect(() => {
+    const role = localStorage.getItem("nutrium_role");
+    if (role !== "patient") {
+      navigate("/landing-acceso", { replace: true });
+      return;
+    }
+
+    const personal = localStorage.getItem(PERSONAL_KEY);
+    if (!personal) {
+      navigate("/register/patient/personal", { replace: true });
+    }
+  }, [navigate]);
+
+  // Prefill
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      setForm((prev) => ({ ...prev, ...data }));
+    } catch {}
+  }, []);
+
+  // Autosave
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+  }, [form]);
 
   const conditionOptions = [
     { value: "", label: "Elige una opción" },
@@ -50,9 +70,9 @@ const RegisterPatientHealth: React.FC = () => {
 
   useEffect(() => {
     if (form.condition !== "otra" && form.conditionDetails) {
-        setForm((p) => ({ ...p, conditionDetails: "" }));
+      setForm((p) => ({ ...p, conditionDetails: "" }));
     }
-    }, [form.condition]);
+  }, [form.condition]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,11 +85,7 @@ const RegisterPatientHealth: React.FC = () => {
 
     setIsLoading(true);
     try {
-      localStorage.setItem(
-        "nutrium_register_patient_health",
-        JSON.stringify(form)
-      );
-
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
       navigate("/register/photo");
     } catch (err: any) {
       setError(err?.message || "Error inesperado");
@@ -80,6 +96,10 @@ const RegisterPatientHealth: React.FC = () => {
 
   return (
     <AuthLayout>
+      <div className="relative mb-4">
+        <BackButton />
+      </div>
+
       <LogoHeader
         title="Formulario de Salud"
         subtitle="La información que completes será utilizada exclusivamente para generar recomendaciones personalizadas y será tratada conforme a la normativa de protección de datos vigentes."
