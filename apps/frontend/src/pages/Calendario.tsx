@@ -11,12 +11,12 @@ const Calendario: React.FC = () => {
 
   if (!hasAppointments) {
     return <EmptyAppointments />;
-  }
+  } 
 
   return (
-    <main className="px-6">
+    <main>
 
-      <section>
+      <section  className="px-6">
         <h2 className="text-xl font-semibold">Próximas citas</h2>
         <p className="text-sm text-slate-500">
           Estas son sus próximas citas.
@@ -25,8 +25,10 @@ const Calendario: React.FC = () => {
 
       <hr className="w-screen border-t border-[#7ECD43] my-4" />
 
-      {user?.role === "patient" && <PatientCalendarView />}
-      {user?.role === "nutritionist" && <NutritionistCalendarView />}
+      <section  className="px-6">
+        {user?.role === "patient" && <PatientCalendarView />}
+        {user?.role === "nutritionist" && <NutritionistCalendarView />}
+      </section>
 
     </main>
   );

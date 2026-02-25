@@ -20,7 +20,7 @@ export const TimeSlots: React.FC<Props> = ({
           className={`py-2 rounded-xl border ${
             selectedTime === hour
               ? "bg-[#7ECD43] text-white border-[#7ECD43]"
-              : "border-slate-200 text-slate-700"
+              : "border-slate-200 text-[#878B95] bg-white shadow-[0_8px_5px_0_rgba(0,0,0,0.4)]"
           }`}
         >
           {hour}

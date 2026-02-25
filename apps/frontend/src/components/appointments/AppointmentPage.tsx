@@ -6,7 +6,7 @@ import { AppointmentModal } from "./AppointmentModal";
 import { Button } from "../common/Button";
 
 interface Props {
-  nutritionistId?: string; // 👈 preparado para futuro
+  nutritionistId?: string;
 }
 
 export const AppointmentPage: React.FC<Props> = ({
@@ -37,7 +37,7 @@ export const AppointmentPage: React.FC<Props> = ({
 
       <hr className="w-screen border-t border-[#7ECD43] my-4" />
 
-      <section>
+      <section className="mx-6">
         <h6 className="font-medium mb-2">Fecha</h6>
 
         <DateSelector
@@ -51,7 +51,7 @@ export const AppointmentPage: React.FC<Props> = ({
             selectedDate={selectedDate}
             onSelectDate={(date) => {
               setSelectedDate(date);
-              setSelectedTime(null); // 👈 resetea hora correctamente
+              setSelectedTime(null);
             }}
           />
         )}
