@@ -1,0 +1,54 @@
+### Variables Globales
+@baseUrl = http://localhost:3000/api/v1
+# Reemplaza ESTE_TOKEN con un token JWT real generado en el endpoint de login de tu compañero
+@token = ESTE_TOKEN
+
+---
+
+### 1. Obtener Perfil del Nutricionista (Debe dar 404 si aún no existe)
+GET {{baseUrl}}/nutritionists/profile
+Authorization: Bearer {{token}}
+
+---
+
+### 2. Crear/Actualizar Perfil (Upsert)
+PUT {{baseUrl}}/nutritionists/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "license_number": "MN-987654",
+  "bio": "Especialista en nutrición deportiva y recomposición corporal.",
+  "modality": "online",
+  "years_of_experience": 8,
+  "tag_ids": [1, 2] 
+}
+# Nota: Los tag_ids son enteros (1, 2). Asegúrate de que existan en la tabla clinical_tags.
+
+---
+
+### 3. Establecer Disponibilidad (Agenda)
+POST {{baseUrl}}/nutritionists/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "slots": [
+    { 
+      "day_of_week": 1, 
+      "start_time": "09:00", 
+      "end_time": "13:00" 
+    },
+    { 
+      "day_of_week": 3, 
+      "start_time": "15:00", 
+      "end_time": "19:00" 
+    }
+  ]
+}
+# Nota: day_of_week usa 1 (Lunes) y 3 (Miércoles).
+
+---
+
+### 4. Listar Nutricionistas Públicamente (Sin Token)
+GET {{baseUrl}}/nutritionists?page=1&limit=10
