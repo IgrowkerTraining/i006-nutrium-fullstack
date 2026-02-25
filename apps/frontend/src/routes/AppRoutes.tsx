@@ -3,19 +3,31 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import { useAuth } from "../hooks/useAuth";
+
+import LandingAcceso from "../pages/LandingAcceso";
+import TerminosYCondiciones from "../pages/TerminosYCondiciones";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+
+import RegisterNutritionistPersonal from "../pages/register/RegisterNutritionistPersonal";
+import RegisterNutritionistProfessional from "../pages/register/RegisterNutritionistProfessional";
+import RegisterPatientPersonal from "../pages/register/RegisterPatientPersonal";
+import RegisterPatientHealth from "../pages/register/RegisterPatientHealth";
+import RegisterPhoto from "../pages/register/RegisterPhoto";
+import RegisterConfirm from "../pages/register/RegisterConfirm";
+
+import OnboardingPatient from "../pages/onboarding/OnboardingPatient";
+import OnboardingNutritionist from "../pages/onboarding/OnboardingNutritionist";
+
+import AppLayout from "../components/layout/AppLayout";
 import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
-import AppLayout from "../components/layout/AppLayout";
 import MatchPaciente from "../pages/MatchPaciente";
 import MatchNutricionista from "../pages/MatchNutricionista";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
-import LandingAcceso from "../pages/LandingAcceso";
-import TerminosYCondiciones from "../pages/TerminosYCondiciones";
 import HomePage from "../pages/HomePage";
 import MatchNutriList from "../pages/MatchNutriList";
 import MatchPacienteList from "../pages/MatchPacienteList";
@@ -35,12 +47,11 @@ const MatchIndexRedirect: React.FC = () => {
   );
 };
 
-
-
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
+      <Route path="/" element={<Navigate to="/landing-acceso" replace />} />
       <Route 
       path="/home-page" 
       element={
@@ -49,6 +60,9 @@ export const AppRoutes: React.FC = () => {
         </PublicRoute>
       } 
       />
+      <Route path="/landing-acceso" element={<LandingAcceso />} />
+      <Route path="/terminos-y-condiciones" element={<TerminosYCondiciones />} />
+
       <Route
         path="/login"
         element={
@@ -57,6 +71,7 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
+
       <Route
         path="/register"
         element={
@@ -65,49 +80,106 @@ export const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
+
+            {/* register por rol */}
+      <Route
+        path="/register/nutritionist/personal"
+        element={
+          <PublicRoute>
+            <RegisterNutritionistPersonal />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register/nutritionist/professional"
+        element={
+          <PublicRoute>
+            <RegisterNutritionistProfessional />
+          </PublicRoute>
+        }
+      />
+      
+      <Route
+        path="/register/photo"
+        element={
+          <PublicRoute>
+            <RegisterPhoto />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register/confirm"
+        element={
+          <PublicRoute>
+            <RegisterConfirm />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register/patient/personal"
+        element={
+          <PublicRoute>
+            <RegisterPatientPersonal />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register/patient/health"
+        element={
+          <PublicRoute>
+            <RegisterPatientHealth />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/onboarding/patient"
+        element={
+          <PublicRoute>
+            <OnboardingPatient />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/onboarding/nutritionist"
+        element={
+          <PublicRoute>
+            <OnboardingNutritionist />
+          </PublicRoute>
+        }
+      />
+
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
       <Route path="/landing-acceso" element={<LandingAcceso />} />
-      <Route
-        path="/terminos-y-condiciones"
-        element={<TerminosYCondiciones />}/>
       <Route path="/match-paciente" element={<MatchPaciente />} />
       <Route path="/match-nutricionista" element={<MatchNutricionista />} />
 
 
-      {/* Rutas privadas */}
-      <Route element={
-        <ProtectedRoute>
-          <AppLayout />
-        </ProtectedRoute>
-        }>
+      {/* privadas */}
       <Route
-        path="/cuestionario-personal"
         element={
-            <CuestionarioPersonal />
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
         }
-      />
-      <Route
-        path="/cuestionario-salud"
-        element={
-            <CuestionarioSalud />
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-            <Dashboard />
-        }
-      />
-
-      <Route path="/perfil" element={<Perfil />} />
-      <Route path="/calendario" element={<Calendario />} />
-      <Route path="/match" element={<MatchIndexRedirect />} />
-      <Route path="/match/nutri-list" element={<MatchNutriList />} />
-      <Route path="/match/paciente-list" element={<MatchPacienteList />} />
-
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/calendario" element={<Calendario />} />
+        <Route path="/match" element={<MatchIndexRedirect />} />
+        <Route path="/match/nutri-list" element={<MatchNutriList />} />
+        <Route path="/match/paciente-list" element={<MatchPacienteList />} />
+        <Route path="/cuestionario-personal" element={<CuestionarioPersonal />} />
+        <Route path="/cuestionario-salud" element={<CuestionarioSalud />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/home-page" replace />} />
+      <Route path="*" element={<Navigate to="/landing-acceso" replace />} />
+
     </Routes>
   );
 };

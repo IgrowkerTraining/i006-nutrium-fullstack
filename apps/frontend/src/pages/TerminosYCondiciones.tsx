@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import logo from "../assets/nutrium-logo.svg";
 import argentina from "../assets/argentina.png";
@@ -7,6 +8,21 @@ import spain from "../assets/spain.png";
 import { Button } from "../components/common/Button";
 
 const TerminosYCondiciones: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const role = localStorage.getItem("nutrium_role");
+    if (!role) navigate("/landing-acceso", { replace: true });
+  }, [navigate]);
+
+  const handleContinue = () => {
+    const role = localStorage.getItem("nutrium_role");
+    if (!role) {
+      navigate("/landing-acceso", { replace: true });
+      return;
+    }
+    navigate("/login");
+  };  
   const estiloTitulo = "font-bold text-[1.5em] mb-2";
   const estiloP = "mb-6 text-[1.25em]";
   const estiloArticle = "border-b-2 border-[#7ECD43] pb-2 mb-6";
@@ -171,10 +187,13 @@ const TerminosYCondiciones: React.FC = () => {
           <p className={`${estiloP} text-[#FF3131]`}>Debes aceptar los términos y condiciones para poder seguir usando la aplicación.</p>
       )}
       <Button 
-      variant={ambosChecked ? "primary" : "secondary"}
-      disabled={!ambosChecked}
-      className="w-full mt-4"
-      >Continuar</Button>
+        variant={ambosChecked ? "primary" : "secondary"}
+        disabled={!ambosChecked}
+        className="w-full mt-4"
+        onClick={handleContinue}
+      >
+        Continuar
+      </Button>
     </article>
   </AuthLayout>
   );
