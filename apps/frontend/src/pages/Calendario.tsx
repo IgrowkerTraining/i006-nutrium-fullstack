@@ -11,7 +11,7 @@ const Calendario: React.FC = () => {
 
   if (!hasAppointments) {
     return <EmptyAppointments />;
-  } 
+  }
 
   return (
     <main>

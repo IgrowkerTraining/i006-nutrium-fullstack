@@ -175,10 +175,18 @@ export const CalendarGrid: React.FC<Props> = ({
                         <button
                             key={index}
                             disabled={disabled}
-                            onClick={() => onSelectDate(date)}
+                            onClick={() => {
+                                onSelectDate(date);
+
+                                if (!current) {
+                                    setCurrentMonth(
+                                    new Date(date.getFullYear(), date.getMonth(), 1)
+                                    );
+                                }
+                            }}
                             className={`
-                py-2 rounded-full text-sm transition
-                ${isSelected
+                                py-2 rounded-full text-sm transition
+                                ${isSelected
                                     ? "bg-[#7ECD43] text-white"
                                     : disabled
                                         ? "bg-slate-100 text-slate-400 cursor-not-allowed"
