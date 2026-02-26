@@ -137,6 +137,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/landing-acceso" element={<LandingAcceso />} />
       <Route path="/match-paciente" element={<MatchPaciente />} />
       <Route path="/match-nutricionista" element={<MatchNutricionista />} />
+      <Route path="/match/nutri-list" element={<MatchNutriList />} />
+      <Route path="/match/paciente-list" element={<MatchPacienteList />} />
 
 
       {/* privadas */}
@@ -151,8 +153,6 @@ export const AppRoutes: React.FC = () => {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/calendario" element={<Calendario />} />
         <Route path="/match" element={<MatchIndexRedirect />} />
-        <Route path="/match/nutri-list" element={<MatchNutriList />} />
-        <Route path="/match/paciente-list" element={<MatchPacienteList />} />
         <Route path="/cuestionario-personal" element={<CuestionarioPersonal />} />
         <Route path="/cuestionario-salud" element={<CuestionarioSalud />} />
       </Route>

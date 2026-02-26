@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "../../components/layout/AuthLayout";
 import logo from "../../assets/nutrium-logo.svg";
 import animation from "../../assets/NUTRIUM-Animacion.gif"
 
 
 const Match: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/match/nutri-list");
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <AuthLayout>
       <img src={logo} alt="logo Nutrium" className="w-[60%] mx-auto block mb-8"/>
