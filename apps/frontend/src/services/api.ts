@@ -83,4 +83,33 @@ export const api = {
       return false;
     }
   },
+
+  async getNutritionists(): Promise<any> {
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.NUTRITIONISTS}`;
+    const response = await fetch(url);
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al obtener nutricionistas");
+    }
+    return result?.data?.nutritionists || [];
+  },
+
+  async createNutritionistProfile(token: string, data: any): Promise<any> {
+  const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.NUTRITIONISTS}/profile`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  const result = await readJsonSafely(response);
+  if (!response.ok) {
+    throw new Error(result?.message || "Error al crear perfil");
+  }
+  return result;
+},
+
 };
+

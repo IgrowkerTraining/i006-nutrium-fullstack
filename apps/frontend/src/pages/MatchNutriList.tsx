@@ -1,13 +1,14 @@
 import React from "react";
+import { useState, useEffect } from "react";
+import { api } from "../services/api";
 import modalidad from "../assets/Modalidad.png";
 import disponibilidad from "../assets/Disponibilidad.png";
 import cerrar from "../assets/Cerrar.png";
 import nutricionista from "../assets/nutricionista.png";
 import { Button } from "../components/common/Button";
 
-// TODO: Replace with actual data from API
 //Datos hardcodeados para pruebas
-const nutricionistas = [
+/* const nutricionistas = [
   {
     name: "Laura Gonzalez",
     specialty: "Nutrición clínica",
@@ -24,13 +25,20 @@ const nutricionistas = [
     modalidad: "Presencial",
     disponibilidad: "Tarde"
   }
-];
+]; */
 
-const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
-  .filter((n) => n.compatibilidad >= 80)
-  .sort((a, b) => b.compatibilidad - a.compatibilidad);
 
 const MatchNutriList: React.FC = () => {
+  const [nutricionistas, setNutricionistas] = useState([]);
+  
+  useEffect(() => {
+    api.getNutritionists().then(setNutricionistas);
+  }, []);
+  
+  /* const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
+    .filter((n) => n.compatibilidad >= 80)
+    .sort((a, b) => b.compatibilidad - a.compatibilidad); */
+
   return (
     <div>
       <article className="pl-4 border-b border-[#7ECD43] pb-2 mt-4">
@@ -38,7 +46,7 @@ const MatchNutriList: React.FC = () => {
         <p className="text-[1.25em]">Estos nutricionistas tienen mas compatibilidad con lo que estás buscando.</p>
       </article>
       <p className="ml-4 mb-12">* Las recomendaciones se basan en la información proporcionada y no sustituyen evualuación médica</p>
-      {recomendados.map((n) => (
+      {nutricionistas.map((n) => (
         <div key={n.matrícula} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <img src={nutricionista} alt="foto perfil nutricionista" className="w-20 h-20 rounded-full object-cover object-center bg-slate-100" />

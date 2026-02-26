@@ -1,7 +1,7 @@
 import React from "react";
-import { AuthLayout } from "../components/layout/AuthLayout";
-import logo from "../assets/nutrium-logo.svg";
-import animation from "../assets/NUTRIUM-Animacion.gif"
+import { AuthLayout } from "../../components/layout/AuthLayout";
+import logo from "../../assets/nutrium-logo.svg";
+import animation from "../../assets/NUTRIUM-Animacion.gif"
 
 
 const MatchNutricionista: React.FC = () => {

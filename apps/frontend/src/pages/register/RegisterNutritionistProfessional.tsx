@@ -18,9 +18,13 @@ const RegisterNutritionistProfessional: React.FC = () => {
     pais: "",
     ciudad: "",
     tituloHabilitante: "",
+    anosExperiencia: "",
   });
 
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+
 
   // Guard + que exista personal antes
   useEffect(() => {
@@ -42,6 +46,7 @@ const RegisterNutritionistProfessional: React.FC = () => {
     try {
       const data = JSON.parse(saved);
       setForm((prev) => ({ ...prev, ...data }));
+      if (data.tagIds) setSelectedTags(data.tagIds);
     } catch {}
   }, []);
 
@@ -65,8 +70,9 @@ const RegisterNutritionistProfessional: React.FC = () => {
     if (!form.tituloHabilitante.trim())
       return setError("Introduce tu título habilitante.");
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...form, tagIds: selectedTags }));
     navigate("/register/photo");
+
   };
 
   return (
@@ -128,9 +134,68 @@ const RegisterNutritionistProfessional: React.FC = () => {
           onChange={handleChange}
         />
 
+        <Input
+          label="Años de experiencia*"
+          name="anosExperiencia"
+          type="number"
+          placeholder="5"
+          required
+          value={form.anosExperiencia}
+          onChange={handleChange}
+        />
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Especialidades*</label>
+          {[
+            { id: 1, name: "Diabetes" },
+            { id: 2, name: "Nutrición deportiva" },
+            { id: 3, name: "Pérdida de peso" },
+            { id: 4, name: "Nutrición infantil" },
+            { id: 5, name: "Vegetarianismo/Veganismo" },
+          ].map((tag) => (
+            <label key={tag.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedTags.includes(tag.id)}
+                onChange={() =>
+                  setSelectedTags((prev) =>
+                    prev.includes(tag.id)
+                      ? prev.filter((id) => id !== tag.id)
+                      : [...prev, tag.id]
+                  )
+                }
+              />
+              {tag.name}
+            </label>
+          ))}
+        </div>
+
+
+
         <Button type="submit" className="w-full">
           Confirmar
         </Button>
+
+        {/* Botón para DEV */}
+        {import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                matricula: "MB7854",
+                pais: "AR",
+                ciudad: "Buenos Aires",
+                tituloHabilitante: "Lic. en Nutrición",
+              }));
+              navigate("/register/photo");
+            }}
+          >
+            [DEV] Skip
+          </Button>
+        )}
+
 
         <Button
           type="button"

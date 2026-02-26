@@ -16,15 +16,12 @@ import RegisterPatientHealth from "../pages/register/RegisterPatientHealth";
 import RegisterPhoto from "../pages/register/RegisterPhoto";
 import RegisterConfirm from "../pages/register/RegisterConfirm";
 
-import OnboardingPatient from "../pages/onboarding/OnboardingPatient";
-import OnboardingNutritionist from "../pages/onboarding/OnboardingNutritionist";
-
 import AppLayout from "../components/layout/AppLayout";
 import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
-import MatchPaciente from "../pages/MatchPaciente";
-import MatchNutricionista from "../pages/MatchNutricionista";
+import MatchPaciente from "../pages/onboarding/MatchPaciente";
+import MatchNutricionista from "../pages/onboarding/MatchNutricionista";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
@@ -51,7 +48,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route path="/" element={<Navigate to="/landing-acceso" replace />} />
+      <Route path="/" element={<HomePage />} />
       <Route 
       path="/home-page" 
       element={
@@ -132,24 +129,6 @@ export const AppRoutes: React.FC = () => {
         element={
           <PublicRoute>
             <RegisterPatientHealth />
-          </PublicRoute>
-        }
-      />
-
-      <Route
-        path="/onboarding/patient"
-        element={
-          <PublicRoute>
-            <OnboardingPatient />
-          </PublicRoute>
-        }
-      />
-
-      <Route
-        path="/onboarding/nutritionist"
-        element={
-          <PublicRoute>
-            <OnboardingNutritionist />
           </PublicRoute>
         }
       />
