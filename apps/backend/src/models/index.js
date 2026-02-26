@@ -9,6 +9,7 @@
 
 const User               = require('./User');
 const NutritionistProfile = require('./NutritionistProfile');
+const Patient            = require('./Patient');
 const ClinicalTag        = require('./ClinicalTag');
 const Availability       = require('./Availability');
 
@@ -19,6 +20,10 @@ const Availability       = require('./Availability');
 // 1:1  User ↔ NutritionistProfile
 User.hasOne(NutritionistProfile, { foreignKey: 'user_id', as: 'nutritionistProfile' });
 NutritionistProfile.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// 1:1  User ↔ Patient (patient_profiles)
+User.hasOne(Patient, { foreignKey: 'user_id', as: 'patientProfile' });
+Patient.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 /**
  * N:M  NutritionistProfile ↔ ClinicalTag
@@ -49,6 +54,27 @@ ClinicalTag.belongsToMany(NutritionistProfile, {
   as: 'nutritionists',
 });
 
+/**
+ * N:M  Patient ↔ ClinicalTag
+ *
+ * Tabla pivote: patient_tags (patient_id BIGINT, tag_id INT)
+ * timestamps: false → evita que Sequelize intente leer/escribir
+ * created_at / updated_at en la join table durante setTags().
+ */
+Patient.belongsToMany(ClinicalTag, {
+  through: { model: 'patient_tags', timestamps: false },
+  foreignKey: 'patient_id',
+  otherKey: 'tag_id',
+  as: 'tags',
+});
+
+ClinicalTag.belongsToMany(Patient, {
+  through: { model: 'patient_tags', timestamps: false },
+  foreignKey: 'tag_id',
+  otherKey: 'patient_id',
+  as: 'patients',
+});
+
 // 1:N  NutritionistProfile → Availability
 NutritionistProfile.hasMany(Availability, {
   foreignKey: 'nutritionist_profile_id',
@@ -65,6 +91,7 @@ Availability.belongsTo(NutritionistProfile, {
 module.exports = {
   User,
   NutritionistProfile,
+  Patient,
   ClinicalTag,
   Availability,
 };
