@@ -6,6 +6,7 @@ import disponibilidad from "../assets/Disponibilidad.png";
 import cerrar from "../assets/Cerrar.png";
 import nutricionista from "../assets/nutricionista.png";
 import { Button } from "../components/common/Button";
+import AppLayout from "../components/layout/AppLayout";
 
 //Datos hardcodeados para pruebas
 /* const nutricionistas = [
@@ -40,7 +41,7 @@ const MatchNutriList: React.FC = () => {
     .sort((a, b) => b.compatibilidad - a.compatibilidad); */
 
   return (
-    <div>
+    <AppLayout>
       <article className="pl-4 border-b border-[#7ECD43] pb-2 mt-4">
         <h2 className="text-[2em] font-bold mb-2">Listado de Nutricionistas</h2>
         <p className="text-[1.25em]">Estos nutricionistas tienen mas compatibilidad con lo que estás buscando.</p>
@@ -83,7 +84,7 @@ const MatchNutriList: React.FC = () => {
             <Button className="w-[90%] mx-auto mb-4">Agendar cita</Button>
         </div>
       ))}
-    </div>
+    </AppLayout>
   );
 };
 
