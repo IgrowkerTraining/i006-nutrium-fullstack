@@ -5,6 +5,7 @@ import cerrar from "../assets/Cerrar.png";
 import modalidad from "../assets/Modalidad.png";
 import disponibilidad from "../assets/Disponibilidad.png";
 import { Button } from "../components/common/Button";
+import AppLayout from "../components/layout/AppLayout";
 
 // TODO: Replace with actual data from API
 //Datos hardcodeados para pruebas
@@ -35,7 +36,7 @@ const recomendados = [...pacientes] //hacemos spread para no mutar el array orig
 
 const MatchPacienteList: React.FC = () => {
    return (
-    <div>
+    <AppLayout>
         <p className="text-[1.25em] font-bold mb-4 ml-4">Información de pacientes</p>
       {recomendados.map((p) => (
         <div key={p.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
@@ -67,7 +68,7 @@ const MatchPacienteList: React.FC = () => {
             <Button className="w-[90%] mx-auto mb-4">Aceptar cita</Button>
         </div>
       ))}
-    </div>
+    </AppLayout>
   );
 };
 
