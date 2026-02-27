@@ -45,6 +45,14 @@ export interface AuthState {
   error: string | null;
 }
 
+export interface Notification {
+  id: string;
+  type: "info" | "warning" | "error";
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
 // export enum AuthView {
 //   LOGIN = "LOGIN",
 //   REGISTER = "REGISTER",
