@@ -5,9 +5,9 @@ import { Button } from "../components/common/Button";
 import { PasswordInput } from "../components/common/PasswordInput";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { LogoHeader } from "../components/common/LogoHeader";
-import { User } from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth"; 
+import { storage } from "../utils/storage";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.login({ email, password });
+      storage.setToken(response.token);
       login(response.user);
       navigate("/dashboard");
     } catch (err: any) {

@@ -19,12 +19,13 @@ export const ROUTES = {
 } as const;
 
 export const API_ENDPOINTS = {
-  BASE: 'http://localhost:3000/api',
+  BASE: 'http://localhost:3000/api/v1',
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
   },
   HEALTH: '/health',
+  NUTRITIONISTS: '/nutritionists',
 } as const;
 
 export const STORAGE_KEYS = {

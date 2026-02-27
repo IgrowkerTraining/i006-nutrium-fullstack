@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "../../components/layout/AuthLayout";
 import { Button } from "../../components/common/Button";
 import { ReadOnlyField } from "../../components/common/ReadOnlyField";
+import { api } from "../../services/api";
 
 type NutritionistPersonal = {
   fullName: string;
@@ -18,6 +19,8 @@ type NutritionistProfessional = {
   pais: string;
   ciudad: string;
   tituloHabilitante: string;
+  anosExperiencia: string;
+  tagIds: number[];
 };
 
 type PatientPersonal = {
@@ -96,10 +99,50 @@ const RegisterConfirm: React.FC = () => {
     }
   }, [role, navigate, nutriPersonal, nutriProfessional, patientPersonal, patientHealth]);
 
-  const handleContinue = () => {
-    if (role === "nutritionist") return navigate("/onboarding/nutritionist");
-    if (role === "patient") return navigate("/onboarding/patient");
-    navigate("/landing-acceso");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleContinue = async () => {
+    try {
+      if (role === "nutritionist" && nutriPersonal && nutriProfessional) {
+        setIsLoading(true);
+        setError(null);
+
+        // 1. Login para obtener token (ya está registrado)
+        const password = sessionStorage.getItem("nutrium_temp_password");
+        if (!password) {
+          alert("Sesión expirada. Vuelve a introducir tus datos.");
+          return navigate("/register/nutritionist/personal");
+        }
+
+        const { token } = await api.login({
+          email: nutriPersonal.email,
+          password,
+        });
+
+        // 2. Crear perfil de nutricionista
+        await api.createNutritionistProfile(token, {
+          license_number: nutriProfessional.matricula,
+          bio: nutriPersonal.especializacion || "Nutricionista profesional",
+          modality: nutriPersonal.modalidad || "online",
+          years_of_experience: parseInt(nutriProfessional.anosExperiencia) || 0,
+          tag_ids: nutriProfessional.tagIds || [],
+        });
+
+        // 3. Limpiar contraseña temporal
+        sessionStorage.removeItem("nutrium_temp_password");
+
+        return navigate("/match-nutricionista");
+      }
+
+      if (role === "patient") return navigate("/match-paciente");
+      navigate("/landing-acceso");
+    } catch (err: any) {
+      console.error("Error:", err);
+      setError(err.message || "Error al crear perfil");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -218,7 +261,13 @@ const RegisterConfirm: React.FC = () => {
           </>
         )}
 
-        <Button className="w-full" onClick={handleContinue}>
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-600 text-sm p-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <Button className="w-full" onClick={handleContinue} isLoading={isLoading}>
           Continuar
         </Button>
       </div>

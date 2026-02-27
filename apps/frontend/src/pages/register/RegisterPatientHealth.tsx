@@ -140,6 +140,25 @@ const RegisterPatientHealth: React.FC = () => {
           Continuar
         </Button>
 
+        {/* Botón para DEV */}
+        {import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                condition: "none",
+                conditionDetails: "",
+              }));
+              navigate("/register/photo");
+            }}
+          >
+            [DEV] Skip
+          </Button>
+        )}
+
+
         <Button
           type="button"
           variant="secondary"

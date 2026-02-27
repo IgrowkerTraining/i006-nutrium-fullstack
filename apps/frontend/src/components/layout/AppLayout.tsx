@@ -26,7 +26,11 @@ import { Outlet, useLocation } from "react-router-dom";
 import {HeaderNav} from "./HeaderNav";
 import {BottomNav} from "./BottomNav";
 
-const AppLayout: React.FC = () => {
+type AppLayoutProps = {
+  children?: React.ReactNode;
+};
+
+const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   // Mostrar botón volver solo en ciertas rutas
@@ -39,7 +43,7 @@ const AppLayout: React.FC = () => {
       <HeaderNav showBack={showBack} />
 
       <main className="flex-1 pb-6">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
 
       <BottomNav />

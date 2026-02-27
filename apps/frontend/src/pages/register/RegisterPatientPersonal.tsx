@@ -8,6 +8,7 @@ import { PasswordInput } from "../../components/common/PasswordInput";
 import { Select } from "../../components/common/Select";
 import { Button } from "../../components/common/Button";
 import { BackButton } from "../../components/common/BackButton";
+import { api } from "../../services/api";
 
 type FormState = {
   fullName: string;
@@ -130,6 +131,13 @@ const RegisterPatientPersonal: React.FC = () => {
         })
       );
 
+      await api.register({
+        name: form.fullName,
+        email: form.email,
+        password: form.password,
+        role: "patient",
+      });
+
       navigate("/register/patient/health");
     } catch (err: any) {
       setError(err?.message || "Error inesperado");
@@ -204,6 +212,32 @@ const RegisterPatientPersonal: React.FC = () => {
         <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
           Continuar
         </Button>
+
+        {/* Botón para DEV */}
+        {import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              localStorage.setItem("nutrium_role", "patient");
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                fullName: "Test Paciente",
+                birthDate: "1990-01-01",
+                country: "AR",
+                city: "Córdoba",
+                email: "paciente@test.com",
+                modalidad: "online",
+                disponibilidad: "manana",
+                objetivo: "bajar peso",
+              }));
+              navigate("/register/patient/health");
+            }}
+          >
+            [DEV] Skip
+          </Button>
+        )}
+
 
         <p className="text-center text-sm text-slate-500">
           ¿Ya tienes cuenta?{" "}
