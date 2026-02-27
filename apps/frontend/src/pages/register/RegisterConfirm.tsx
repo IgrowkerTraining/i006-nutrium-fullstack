@@ -52,6 +52,7 @@ function safeParse<T>(key: string): T | null {
 const RegisterConfirm: React.FC = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("nutrium_role");
+  const isDevMock = sessionStorage.getItem("nutrium_dev_mock") === "1";
 
   const nutriPersonal = useMemo(
     () => safeParse<NutritionistPersonal>("nutrium_register_nutritionist_personal"),
@@ -102,9 +103,24 @@ const RegisterConfirm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleContinueDevMock = () => {
+    sessionStorage.removeItem("nutrium_temp_password");
+    sessionStorage.removeItem("nutrium_dev_mock");
+
+    if (role === "nutritionist") return navigate("/match-nutricionista");
+    if (role === "patient") return navigate("/match-paciente");
+    return navigate("/landing-acceso");
+  };
+
   const handleContinue = async () => {
     try {
       if (role === "nutritionist" && nutriPersonal && nutriProfessional) {
+        if (import.meta.env.DEV && isDevMock) {
+          sessionStorage.removeItem("nutrium_temp_password");
+          sessionStorage.removeItem("nutrium_dev_mock");
+          return navigate("/match-nutricionista");
+        }
+
         setIsLoading(true);
         setError(null);
 
@@ -135,7 +151,13 @@ const RegisterConfirm: React.FC = () => {
         return navigate("/match-nutricionista");
       }
 
-      if (role === "patient") return navigate("/match-paciente");
+      if (role === "patient") {
+        if (import.meta.env.DEV && isDevMock) {
+          sessionStorage.removeItem("nutrium_dev_mock");
+          return navigate("/match-paciente");
+        }
+        return navigate("/match-paciente");
+      }
       navigate("/landing-acceso");
     } catch (err: any) {
       console.error("Error:", err);
@@ -270,6 +292,17 @@ const RegisterConfirm: React.FC = () => {
         <Button className="w-full" onClick={handleContinue} isLoading={isLoading}>
           Continuar
         </Button>
+
+        {import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={handleContinueDevMock}
+          >
+            [DEV] Continuar (sin API)
+          </Button>
+        )}
       </div>
     </AuthLayout>
   );
