@@ -1,5 +1,5 @@
-const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
 /**
  * Modelo Patient - Mapeado a la tabla `patient_profiles` de PostgreSQL.
@@ -32,11 +32,11 @@ Patient.init(
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'users',
-        key: 'id',
+        model: "users",
+        key: "id",
       },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
 
     // Fecha de nacimiento del paciente
@@ -56,15 +56,45 @@ Patient.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+
+    // Idiomas que habla el paciente (array de strings)
+    languages: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+    },
+
+    // Modalidad de atención preferida
+    modality: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+
+    // URL o path de la foto de perfil
+    profile_picture: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+
+    // País del paciente
+    country: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+
+    // Ciudad del paciente
+    city: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
   },
   {
     sequelize,
-    modelName: 'Patient',
-    tableName: 'patient_profiles',
+    modelName: "Patient",
+    tableName: "patient_profiles",
     timestamps: true,
-    updatedAt: false,     // patient_profiles no tiene columna updated_at
+    updatedAt: false, // patient_profiles no tiene columna updated_at
     underscored: true,
-  }
+  },
 );
 
 module.exports = Patient;

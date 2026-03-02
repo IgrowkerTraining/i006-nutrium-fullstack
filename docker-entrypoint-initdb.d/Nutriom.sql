@@ -25,6 +25,11 @@ CREATE TABLE patient_profiles (
     birth_date DATE NOT NULL,
     gender VARCHAR(50),
     health_goals TEXT,
+    languages TEXT[],
+    modality VARCHAR(50),
+    profile_picture VARCHAR(255),
+    country VARCHAR(100),
+    city VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -45,6 +50,8 @@ CREATE TABLE nutritionist_profiles (
     rating DECIMAL(3,2) DEFAULT 0.0,
     total_reviews INT DEFAULT 0,
     is_verified BOOLEAN DEFAULT FALSE,
+    country VARCHAR(100),
+    city VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
