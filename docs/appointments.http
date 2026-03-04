@@ -1,0 +1,86 @@
+### Appointments API Test File
+### Use this file to test the Appointments endpoints using VS Code REST Client extension
+
+# Variables globales
+@baseUrl = http://localhost:3000/api/v1
+@patientToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMSIsImVtYWlsIjoicGFjaWVudGVAZXhhbXBsZS5jb20iLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc0NTA4NzQwMH0.fake_token_replace_me
+@nutritionistToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsImVtYWlsIjoibnV0cmljaW9uaXN0YUBleGFtcGxlLmNvbSIsInJvbGUiOiJudXRyaXRpb25pc3QiLCJpYXQiOjE3NDUwODc0MDB9.fake_token_replace_me
+
+# IDs para testing (reemplazar con IDs reales de tu BD)
+@appointmentId = 1
+@nutritionistId = 550e8400-e29b-41d4-a716-446655440000
+@patientId = 550e8400-e29b-41d4-a716-446655440001
+
+###########################################################################
+# 1. CREAR CITA
+###########################################################################
+### Crear una nueva cita (Paciente agenda con Nutricionista)
+### Status: 201 Created
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionistId": "{{nutritionistId}}",
+  "date": "2026-03-15T10:00:00Z",
+  "notes": "Primera consulta, tengo dudas sobre mi dieta"
+}
+
+###########################################################################
+# 2. OBTENER CALENDARIO
+###########################################################################
+### Obtener calendario del paciente (todas sus citas)
+### Filtra automáticamente por rol del usuario autenticado
+GET {{baseUrl}}/appointments/my-calendar
+Authorization: {{patientToken}}
+
+###
+
+### Obtener calendario del nutricionista (todas sus citas)
+GET {{baseUrl}}/appointments/my-calendar
+Authorization: {{nutritionistToken}}
+
+###########################################################################
+# 3. OBTENER DETALLES DE UNA CITA
+###########################################################################
+### Obtener detalles de una cita específica
+### Solo el paciente o nutricionista de la cita pueden verla
+GET {{baseUrl}}/appointments/{{appointmentId}}
+Authorization: {{patientToken}}
+
+###########################################################################
+# 4. DEJAR RESEÑA EN UNA CITA
+###########################################################################
+### Agregar reseña a una cita concluida (solo paciente)
+### Validaciones:
+###   - La fecha de la cita debe haber pasado
+###   - El paciente debe ser el autenticado
+###   - Rating debe estar entre 1-5
+POST {{baseUrl}}/appointments/{{appointmentId}}/review
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excelente profesional, muy atento a mis necesidades"
+}
+
+###
+
+### Agregar reseña con rating bajo
+POST {{baseUrl}}/appointments/{{appointmentId}}/review
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "rating": 3,
+  "comment": "Buena atención pero tardó más de lo esperado"
+}
+
+###########################################################################
+# 5. CANCELAR UNA CITA
+###########################################################################
+### Cancelar una cita (paciente o nutricionista)
+### Solo se puede cancelar si está en estado 'scheduled'
+DELETE {{baseUrl}}/appointments/{{appointmentId}}
+Authorization: {{patientToken}}

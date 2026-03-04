@@ -12,6 +12,7 @@ const NutritionistProfile = require('./NutritionistProfile');
 const Patient            = require('./Patient');
 const ClinicalTag        = require('./ClinicalTag');
 const Availability       = require('./Availability');
+const Appointment        = require('./Appointment');
 
 // ───────────────────────────────────────────────
 // RELACIONES
@@ -85,6 +86,36 @@ Availability.belongsTo(NutritionistProfile, {
   as: 'profile',
 });
 
+/**
+ * 1:N  User → Appointment (como patient)
+ *
+ * Un usuario paciente puede tener múltiples citas.
+ * appointment.patient_id → users.id
+ */
+User.hasMany(Appointment, {
+  foreignKey: 'patient_id',
+  as: 'appointmentsAsPatient',
+});
+Appointment.belongsTo(User, {
+  foreignKey: 'patient_id',
+  as: 'patient',
+});
+
+/**
+ * 1:N  User → Appointment (como nutritionist)
+ *
+ * Un usuario nutricionista puede tener múltiples citas.
+ * appointment.nutritionist_id → users.id
+ */
+User.hasMany(Appointment, {
+  foreignKey: 'nutritionist_id',
+  as: 'appointmentsAsNutritionist',
+});
+Appointment.belongsTo(User, {
+  foreignKey: 'nutritionist_id',
+  as: 'nutritionist',
+});
+
 // ───────────────────────────────────────────────
 // EXPORTS
 // ───────────────────────────────────────────────
@@ -94,4 +125,5 @@ module.exports = {
   Patient,
   ClinicalTag,
   Availability,
+  Appointment,
 };
