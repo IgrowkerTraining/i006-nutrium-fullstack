@@ -7,6 +7,9 @@ import cerrar from "../assets/Cerrar.png";
 import nutricionista from "../assets/nutricionista.png";
 import { Button } from "../components/common/Button";
 import AppLayout from "../components/layout/AppLayout";
+import verificado from "../assets/estado=Verificado.png"
+import noVerificado from "../assets/estado=noVerificado.png"
+
 
 //Datos hardcodeados para pruebas
 /* const nutricionistas = [
@@ -54,7 +57,10 @@ const MatchNutriList: React.FC = () => {
             <article>
               <h3 className="font-semibold text-[1.125em] leading-[1.625em]">Dra./Dr. {n.user?.name || "Sin nombre"}</h3>
               <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">{n.bio || "Nutricionista"}</p>
-              <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">Matrícula: {n.license_number}</p>
+              <div className="flex gap-3 items-center my-2">
+                <img src={noVerificado} alt="no verificado" />
+                <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">Matrícula: {n.license_number}</p>
+              </div>
               {n.tags?.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {n.tags.map((tag: any) => (
