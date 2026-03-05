@@ -379,13 +379,21 @@ class AppointmentService {
     return appointment;
   }
 
-  async updateStatus(appointmentId, userId, nextStatus) {
-    if (!["confirmed", "cancelled"].includes(nextStatus)) {
-      const error = new Error("Estado de transición no soportado");
-      error.statusCode = 400;
-      throw error;
-    }
-
+  // ─────────────────────────────────────────────────────────────
+  // PATCH: Confirmar cita (solo nutricionista, solo desde pending)
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Confirma una cita existente.
+   *
+   * Reglas de negocio:
+   *  1. Filtro de Rol  → solo el nutricionista dueño de la cita puede confirmar.
+   *  2. Máquina de Estados → la cita debe estar en estado `pending`.
+   *
+   * @param {string} appointmentId  UUID de la cita
+   * @param {string} userId         UUID del usuario autenticado (req.user.id)
+   * @returns {Appointment} Cita actualizada
+   */
+  async confirmAppointment(appointmentId, userId) {
     const appointment = await Appointment.findByPk(appointmentId);
 
     if (!appointment) {
@@ -394,40 +402,72 @@ class AppointmentService {
       throw error;
     }
 
-    // Verificar que el usuario sea el paciente o nutricionista
-    if (
-      appointment.patient_id !== userId &&
-      appointment.nutritionist_id !== userId
-    ) {
-      const error = new Error("No tienes permiso para actualizar esta cita");
+    // ── Filtro de Rol: solo el nutricionista asignado puede confirmar ──
+    if (appointment.nutritionist_id !== userId) {
+      const error = new Error(
+        "No tienes permisos para confirmar esta cita. Solo el nutricionista puede hacerlo.",
+      );
       error.statusCode = 403;
       throw error;
     }
 
-    if (appointment.status === nextStatus) {
-      const error = new Error(`La cita ya está en estado ${nextStatus}`);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    if (appointment.status === "cancelled") {
+    // ── Máquina de Estados: solo se puede confirmar desde pending ──
+    if (appointment.status !== "pending") {
       const error = new Error(
-        "No se puede cambiar el estado de una cita cancelada",
+        "Solo se pueden confirmar citas en estado pendiente.",
       );
       error.statusCode = 400;
       throw error;
     }
 
-    await appointment.update({ status: nextStatus });
+    await appointment.update({ status: "confirmed" });
     return appointment;
   }
 
-  async confirmAppointment(appointmentId, userId) {
-    return this.updateStatus(appointmentId, userId, "confirmed");
-  }
-
+  // ─────────────────────────────────────────────────────────────
+  // PATCH: Cancelar cita (paciente o nutricionista, no si ya cancelada)
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Cancela una cita existente.
+   *
+   * Reglas de negocio:
+   *  1. Filtro de Rol  → cualquiera de los dos participantes puede cancelar;
+   *                      un tercero recibe 403.
+   *  2. Máquina de Estados → se permite cancelar desde `pending` o `confirmed`,
+   *                          pero NO si ya está `cancelled`.
+   *
+   * @param {string} appointmentId  UUID de la cita
+   * @param {string} userId         UUID del usuario autenticado (req.user.id)
+   * @returns {Appointment} Cita actualizada
+   */
   async cancelAppointment(appointmentId, userId) {
-    return this.updateStatus(appointmentId, userId, "cancelled");
+    const appointment = await Appointment.findByPk(appointmentId);
+
+    if (!appointment) {
+      const error = new Error("La cita especificada no existe");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // ── Filtro de Rol: solo paciente o nutricionista de la cita ──
+    if (
+      appointment.patient_id !== userId &&
+      appointment.nutritionist_id !== userId
+    ) {
+      const error = new Error("No tienes permisos para cancelar esta cita.");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // ── Máquina de Estados: no se puede volver a cancelar ──
+    if (appointment.status === "cancelled") {
+      const error = new Error("La cita ya se encuentra cancelada.");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    await appointment.update({ status: "cancelled" });
+    return appointment;
   }
 
   // ─────────────────────────────────────────────────────────────
