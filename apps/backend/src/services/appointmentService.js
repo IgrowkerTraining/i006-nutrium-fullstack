@@ -45,6 +45,24 @@ class AppointmentService {
     }
   }
 
+  /**
+   * Valida que la combinación de fecha y hora de inicio sea estrictamente
+   * futura respecto al momento actual.
+   *
+   * @param {string} dateString   YYYY-MM-DD  (ya normalizado)
+   * @param {string} timeString   HH:mm:ss    (ya normalizado)
+   */
+  validateFutureDate(dateString, timeString) {
+    const appointmentDateTime = new Date(`${dateString}T${timeString}`);
+    if (appointmentDateTime <= new Date()) {
+      const error = new Error(
+        "La fecha y hora de la cita deben ser en el futuro",
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
   async validateParticipants(patientId, nutritionistId) {
     const [patient, nutritionist] = await Promise.all([
       User.findByPk(patientId),
@@ -131,6 +149,7 @@ class AppointmentService {
     const normalizedStart = this.normalizeTime(startTime, "start_time");
     const normalizedEnd = this.normalizeTime(endTime, "end_time");
     this.validateTimeRange(normalizedStart, normalizedEnd);
+    this.validateFutureDate(normalizedDate, normalizedStart);
 
     await this.validateParticipants(patientId, nutritionistId);
     await this.ensureNoDoubleBooking(
@@ -379,6 +398,7 @@ class AppointmentService {
       : appointment.end_time;
 
     this.validateTimeRange(String(updatedStart), String(updatedEnd));
+    this.validateFutureDate(String(updatedDate), String(updatedStart));
 
     // Regla 3: si cambia la fecha/hora, re-validar double-booking
     // excluyendo la propia cita con [Op.ne]: appointmentId
