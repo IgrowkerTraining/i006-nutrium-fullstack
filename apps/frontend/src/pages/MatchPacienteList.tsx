@@ -41,7 +41,7 @@ const MatchPacienteList: React.FC = () => {
       {recomendados.map((p) => (
         <div key={p.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
-            <img src={p.foto} alt="foto perfil nutricionista" className="w-20 h-20 rounded-full object-cover object-center bg-slate-100" />
+            <img src={p.foto} alt="foto perfil nutricionista" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />
             <article>
               <h3 className="font-bold text-[1.25em]">{p.name}</h3>
               <p className="text-gray-400">{p.profesión}</p>
