@@ -14,7 +14,7 @@ export interface Patient extends BaseUser {
   birthDate: string;
   country: string;
   city: string;
-  modality: "Virtual" | "Presencial" | "Mixto";
+  modality: "online" | "presencial" | "hibrido";
   availability: "Mañana" | "Tarde";
   goal: "Perder peso" | "Ganar masa muscular";
   medicalCondition: string;
@@ -25,7 +25,7 @@ export interface Nutritionist extends BaseUser {
   role: "nutritionist";
 
   licenseNumber: string; // Matrícula
-  modality: "Virtual" | "Presencial" | "Mixto";
+  modality: "online" | "presencial" | "hibrido";
   availability: "Mañana" | "Tarde";
   education: string; // Formación
   specialization: string;
