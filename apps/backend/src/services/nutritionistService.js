@@ -269,6 +269,89 @@ class NutritionistService {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // PUT availability – reemplazar franjas (hard delete + bulkCreate)
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Elimina PERMANENTEMENTE todas las franjas del nutricionista
+   * y crea las nuevas con un bulkCreate dentro de una transacción.
+   *
+   * Diferencia frente a setAvailability: éste usa Availability.destroy
+   * (hard delete) en lugar de soft-delete, lo que mantiene la tabla
+   * limpia sin filas inactivas históricas.
+   *
+   * @param {string} userId   ID del usuario autenticado
+   * @param {Array}  slots    [{ day_of_week, start_time, end_time }]
+   * @returns {Array} Franjas recién creadas
+   */
+  async replaceAvailability(userId, slots) {
+    if (!Array.isArray(slots) || slots.length === 0) {
+      const error = new Error(
+        "Debes enviar al menos una franja horaria en el array `slots`",
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const profile = await NutritionistProfile.findOne({
+      where: { user_id: userId },
+    });
+    if (!profile) {
+      const error = new Error(
+        "Primero debes crear tu perfil (PUT /api/v1/nutritionists/profile)",
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Validar estructura de cada slot
+    for (const slot of slots) {
+      if (
+        slot.day_of_week === undefined ||
+        slot.day_of_week === null ||
+        !slot.start_time ||
+        !slot.end_time
+      ) {
+        const error = new Error(
+          "Cada slot debe tener day_of_week (0-6), start_time y end_time",
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+      const day = Number(slot.day_of_week);
+      if (!Number.isInteger(day) || day < 0 || day > 6) {
+        const error = new Error(
+          `day_of_week "${slot.day_of_week}" no es válido. Debe ser un entero entre 0 (Domingo) y 6 (Sábado)`,
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    const sequelize = NutritionistProfile.sequelize;
+    const result = await sequelize.transaction(async (t) => {
+      // 1. Hard delete: elimina permanentemente las franjas anteriores
+      //    Se filtra por nutritionist_profile_id (FK del perfil).
+      await Availability.destroy({
+        where: { nutritionist_profile_id: profile.id },
+        transaction: t,
+      });
+
+      // 2. Insertar las nuevas franjas de una sola vez (un INSERT)
+      const newSlots = slots.map((s) => ({
+        nutritionist_profile_id: profile.id,
+        day_of_week: Number(s.day_of_week),
+        start_time: s.start_time,
+        end_time: s.end_time,
+        is_active: true,
+      }));
+
+      return Availability.bulkCreate(newSlots, { transaction: t });
+    });
+
+    return result;
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // GET público – listar nutricionistas con sus especialidades
   // ─────────────────────────────────────────────────────────────
   /**

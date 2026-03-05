@@ -82,15 +82,17 @@ class AppointmentService {
     startTime,
     endTime,
   ) {
+    // Overlapping condition: (new_start < exist_end) AND (new_end > exist_start)
+    // Since start_time and end_time are different columns, they are safe as
+    // separate top-level keys – Sequelize ANDs all string-keyed conditions
+    // implicitly, avoiding the [Op.and]+string-key mixing bug.
     const overlap = await Appointment.findOne({
       where: {
         nutritionist_id: nutritionistId,
         appointment_date: appointmentDate,
         status: { [Op.ne]: "cancelled" },
-        [Op.and]: [
-          { start_time: { [Op.lt]: endTime } },
-          { end_time: { [Op.gt]: startTime } },
-        ],
+        start_time: { [Op.lt]: endTime }, // existing_start < new_end
+        end_time: { [Op.gt]: startTime }, // existing_end   > new_start
       },
     });
 
@@ -268,6 +270,144 @@ class AppointmentService {
 
   async cancelAppointment(appointmentId, userId) {
     return this.updateStatus(appointmentId, userId, "cancelled");
+  }
+  // ─────────────────────────────────────────────────────────────
+  // Double-booking excluyendo la cita que se está editando
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Igual que ensureNoDoubleBooking pero ignora el appointmentId
+   * indicado  —necesario al editar para que la cita no colisione
+   * consigo misma.
+   *
+   * La clave es el predicado `[Op.ne]: excludeId` en la cláusula
+   * WHERE, que descarta la fila de la propia cita antes de buscar
+   * solapamientos.
+   *
+   * @param {string} nutritionistId
+   * @param {string} appointmentDate  YYYY-MM-DD
+   * @param {string} startTime        HH:mm:ss
+   * @param {string} endTime          HH:mm:ss
+   * @param {string} excludeId        ID de la cita que se está editando
+   */
+  async ensureNoDoubleBookingExcluding(
+    nutritionistId,
+    appointmentDate,
+    startTime,
+    endTime,
+    excludeId,
+  ) {
+    // Same flat-key approach: no [Op.and] mixing, all conditions ANDed
+    // implicitly at the top level of the where object.
+    const overlap = await Appointment.findOne({
+      where: {
+        id: { [Op.ne]: excludeId }, // exclude current appointment
+        nutritionist_id: nutritionistId,
+        appointment_date: appointmentDate,
+        status: { [Op.ne]: "cancelled" },
+        start_time: { [Op.lt]: endTime }, // existing_start < new_end
+        end_time: { [Op.gt]: startTime }, // existing_end   > new_start
+      },
+    });
+
+    if (overlap) {
+      const error = new Error(
+        "El nutricionista ya tiene un turno en ese rango horario",
+      );
+      error.statusCode = 409;
+      throw error;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PATCH – modificar una cita existente (solo si está pending)
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Actualiza appointment_date, start_time, end_time y/o notes
+   * de una cita que pertenezca al usuario autenticado, siempre
+   * y cuando la cita esté en estado `pending`.
+   *
+   * @param {string} appointmentId
+   * @param {string} userId          ID del usuario autenticado
+   * @param {Object} updateData      Campos opcionales a modificar
+   * @returns {Appointment}
+   */
+  async updateAppointment(appointmentId, userId, updateData) {
+    if (!appointmentId) {
+      const error = new Error("appointmentId es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Regla 1: buscar la cita y verificar que pertenezca al usuario
+    const appointment = await Appointment.findByPk(appointmentId);
+
+    if (!appointment) {
+      const error = new Error("La cita especificada no existe");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (
+      appointment.patient_id !== userId &&
+      appointment.nutritionist_id !== userId
+    ) {
+      const error = new Error("No tienes permiso para modificar esta cita");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Regla 2: solo citas en estado `pending` pueden editarse
+    if (appointment.status !== "pending") {
+      const error = new Error(
+        `Solo se pueden modificar citas en estado "pending". Estado actual: "${appointment.status}"`,
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Normalizar y validar los campos de tiempo que lleguen en el body
+    const updatedDate = updateData.appointment_date
+      ? this.parseDateOnly(updateData.appointment_date)
+      : appointment.appointment_date;
+
+    const updatedStart = updateData.start_time
+      ? this.normalizeTime(updateData.start_time, "start_time")
+      : appointment.start_time;
+
+    const updatedEnd = updateData.end_time
+      ? this.normalizeTime(updateData.end_time, "end_time")
+      : appointment.end_time;
+
+    this.validateTimeRange(String(updatedStart), String(updatedEnd));
+
+    // Regla 3: si cambia la fecha/hora, re-validar double-booking
+    // excluyendo la propia cita con [Op.ne]: appointmentId
+    const isTimeChanged =
+      updateData.appointment_date ||
+      updateData.start_time ||
+      updateData.end_time;
+
+    if (isTimeChanged) {
+      await this.ensureNoDoubleBookingExcluding(
+        appointment.nutritionist_id,
+        updatedDate,
+        String(updatedStart),
+        String(updatedEnd),
+        appointmentId,
+      );
+    }
+
+    // Construir payload con solo los campos que llegaron
+    const updatePayload = {};
+    if (updateData.appointment_date)
+      updatePayload.appointment_date = updatedDate;
+    if (updateData.start_time) updatePayload.start_time = updatedStart;
+    if (updateData.end_time) updatePayload.end_time = updatedEnd;
+    if (updateData.notes !== undefined)
+      updatePayload.notes = updateData.notes?.trim() || null;
+
+    await appointment.update(updatePayload);
+    return appointment;
   }
 }
 

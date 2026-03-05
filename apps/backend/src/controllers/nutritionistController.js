@@ -191,6 +191,62 @@ class NutritionistController {
   }
 
   // ──────────────────────────────────────────────────────────────
+  // PUT /api/v1/nutritionists/availability
+  // Reemplazar disponibilidad (hard delete + bulkCreate)
+  // ──────────────────────────────────────────────────────────────
+  /**
+   * Recibe un array de slots y reemplaza COMPLETAMENTE la disponibilidad
+   * del nutricionista: elimina las franjas anteriores (destroy) y crea
+   * las nuevas (bulkCreate) dentro de una transacción atómica.
+   *
+   * Body esperado:
+   * {
+   *   "slots": [
+   *     { "day_of_week": 1, "start_time": "09:00", "end_time": "13:00" },
+   *     { "day_of_week": 3, "start_time": "14:00", "end_time": "18:00" }
+   *   ]
+   * }
+   */
+  async replaceAvailability(req, res) {
+    try {
+      const { slots } = req.body;
+
+      if (!slots || !Array.isArray(slots)) {
+        return res.status(400).json({
+          success: false,
+          message: "`slots` es requerido y debe ser un array",
+          data: null,
+        });
+      }
+
+      const created = await nutritionistService.replaceAvailability(
+        req.user.id,
+        slots,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: `Disponibilidad reemplazada: ${created.length} franja(s) guardada(s)`,
+        data: { slots: created },
+      });
+    } catch (error) {
+      console.error(
+        "[NutritionistController.replaceAvailability]",
+        error.message,
+      );
+
+      const statusCode = error.statusCode || 500;
+      const message =
+        statusCode < 500
+          ? error.message
+          : "Error al reemplazar la disponibilidad";
+      return res
+        .status(statusCode)
+        .json({ success: false, message, data: null });
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
   // GET /api/v1/nutritionists  (público)
   // ──────────────────────────────────────────────────────────────
   /**

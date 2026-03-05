@@ -5,6 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TYPE role_enum AS ENUM ('admin', 'patient', 'nutritionist');
 CREATE TYPE match_status_enum AS ENUM ('suggested', 'pending', 'accepted', 'rejected');
 CREATE TYPE modality_enum AS ENUM ('online', 'presencial', 'hibrido');
+CREATE TYPE appointment_status_enum AS ENUM ('pending', 'confirmed', 'cancelled');
 
 -- 3. Tabla de Usuarios (Auth)
 CREATE TABLE users (
@@ -125,4 +126,18 @@ CREATE TABLE matches (
     status match_status_enum DEFAULT 'suggested',
     ai_reasoning JSONB, -- Guardamos la respuesta de la IA aquí
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. Citas (Appointments)
+CREATE TABLE appointments (
+    id BIGSERIAL PRIMARY KEY,
+    patient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    nutritionist_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    appointment_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    notes TEXT,
+    status appointment_status_enum NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

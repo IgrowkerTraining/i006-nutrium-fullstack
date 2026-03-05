@@ -46,6 +46,16 @@ router.patch("/:id/cancel", authenticate, (req, res) =>
 );
 
 // ──────────────────────────────────────────────────────────────
+// PATCH /api/v1/appointments/:id
+// Modificar campos de una cita (solo si está en estado pending)
+// Nota: esta ruta va DESPUÉS de /confirm y /cancel para que
+// '/:id' no capte esas rutas más específicas.
+// ──────────────────────────────────────────────────────────────
+router.patch("/:id", authenticate, (req, res) =>
+  appointmentController.update(req, res),
+);
+
+// ──────────────────────────────────────────────────────────────
 // DELETE /api/v1/appointments/:id
 // Cancelar una cita
 // ──────────────────────────────────────────────────────────────
