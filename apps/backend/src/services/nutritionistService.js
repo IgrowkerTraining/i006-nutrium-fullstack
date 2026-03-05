@@ -1,5 +1,10 @@
-const { Op } = require('sequelize');
-const { NutritionistProfile, ClinicalTag, Availability, User } = require('../models');
+const { Op } = require("sequelize");
+const {
+  NutritionistProfile,
+  ClinicalTag,
+  Availability,
+  User,
+} = require("../models");
 
 /**
  * NutritionistService
@@ -24,22 +29,22 @@ class NutritionistService {
       include: [
         {
           model: ClinicalTag,
-          as: 'tags',
+          as: "tags",
           through: { attributes: [] }, // Oculta columnas de la tabla pivote
-          attributes: ['id', 'name', 'category'],
+          attributes: ["id", "name", "category"],
         },
         {
           model: Availability,
-          as: 'availabilities',
+          as: "availabilities",
           where: { is_active: true },
           required: false, // LEFT JOIN: retorna perfil aunque no tenga horarios
-          attributes: ['id', 'day_of_week', 'start_time', 'end_time'],
+          attributes: ["id", "day_of_week", "start_time", "end_time"],
         },
       ],
     });
 
     if (!profile) {
-      const error = new Error('El nutricionista aún no tiene perfil creado');
+      const error = new Error("El nutricionista aún no tiene perfil creado");
       error.statusCode = 404;
       throw error;
     }
@@ -55,15 +60,24 @@ class NutritionistService {
    * Usa findOrCreate para evitar duplicados basados en user_id.
    *
    * @param {string} userId       - ID del usuario autenticado
-   * @param {Object} profileData  - { license_number, bio, modality, years_of_experience }
+   * @param {Object} profileData  - { license_number, bio, modality, years_of_experience, country, city }
    * @param {Array}  tagIds       - Array opcional de IDs de ClinicalTag
    * @returns {Object} { profile, created }
    */
   async upsertProfile(userId, profileData, tagIds = []) {
-    const { license_number, bio, modality, years_of_experience } = profileData;
+    const {
+      license_number,
+      bio,
+      modality,
+      years_of_experience,
+      country,
+      city,
+    } = profileData;
 
     // Validar campos obligatorios solo en creación
-    const existingProfile = await NutritionistProfile.findOne({ where: { user_id: userId } });
+    const existingProfile = await NutritionistProfile.findOne({
+      where: { user_id: userId },
+    });
 
     let profile;
     let created = false;
@@ -71,15 +85,19 @@ class NutritionistService {
     if (!existingProfile) {
       // ── CREAR ─────────────────────────────────────────────
       if (!license_number) {
-        const error = new Error('El número de matrícula es obligatorio al crear el perfil');
+        const error = new Error(
+          "El número de matrícula es obligatorio al crear el perfil",
+        );
         error.statusCode = 400;
         throw error;
       }
 
       // Verificar que la matrícula no esté en uso por otro nutricionista
-      const duplicateLicense = await NutritionistProfile.findOne({ where: { license_number } });
+      const duplicateLicense = await NutritionistProfile.findOne({
+        where: { license_number },
+      });
       if (duplicateLicense) {
-        const error = new Error('El número de matrícula ya está registrado');
+        const error = new Error("El número de matrícula ya está registrado");
         error.statusCode = 409;
         throw error;
       }
@@ -90,6 +108,8 @@ class NutritionistService {
         bio,
         modality,
         years_of_experience,
+        country: country || null,
+        city: city || null,
       });
       created = true;
     } else {
@@ -103,16 +123,21 @@ class NutritionistService {
             where: { license_number, id: { [Op.ne]: existingProfile.id } },
           });
           if (duplicateLicense) {
-            const error = new Error('El número de matrícula ya está registrado');
+            const error = new Error(
+              "El número de matrícula ya está registrado",
+            );
             error.statusCode = 409;
             throw error;
           }
         }
         updatePayload.license_number = license_number;
       }
-      if (bio !== undefined)                updatePayload.bio = bio;
-      if (modality !== undefined)            updatePayload.modality = modality;
-      if (years_of_experience !== undefined) updatePayload.years_of_experience = years_of_experience;
+      if (bio !== undefined) updatePayload.bio = bio;
+      if (modality !== undefined) updatePayload.modality = modality;
+      if (years_of_experience !== undefined)
+        updatePayload.years_of_experience = years_of_experience;
+      if (country !== undefined) updatePayload.country = country;
+      if (city !== undefined) updatePayload.city = city;
 
       await existingProfile.update(updatePayload);
       profile = existingProfile;
@@ -131,16 +156,20 @@ class NutritionistService {
      */
     if (tagIds.length > 0) {
       // Validar que todos los IDs sean números enteros positivos
-      const allNumeric = tagIds.every((id) => Number.isInteger(Number(id)) && Number(id) > 0);
+      const allNumeric = tagIds.every(
+        (id) => Number.isInteger(Number(id)) && Number(id) > 0,
+      );
       if (!allNumeric) {
-        const error = new Error('tagIds debe ser un array de IDs numéricos enteros positivos');
+        const error = new Error(
+          "tagIds debe ser un array de IDs numéricos enteros positivos",
+        );
         error.statusCode = 400;
         throw error;
       }
 
       const tags = await ClinicalTag.findAll({ where: { id: tagIds } });
       if (tags.length !== tagIds.length) {
-        const error = new Error('Uno o más tagIds son inválidos o no existen');
+        const error = new Error("Uno o más tagIds son inválidos o no existen");
         error.statusCode = 400;
         throw error;
       }
@@ -166,15 +195,21 @@ class NutritionistService {
    */
   async setAvailability(userId, slots) {
     if (!Array.isArray(slots) || slots.length === 0) {
-      const error = new Error('Debes enviar al menos una franja horaria en el array `slots`');
+      const error = new Error(
+        "Debes enviar al menos una franja horaria en el array `slots`",
+      );
       error.statusCode = 400;
       throw error;
     }
 
     // El perfil debe existir antes de establecer horarios
-    const profile = await NutritionistProfile.findOne({ where: { user_id: userId } });
+    const profile = await NutritionistProfile.findOne({
+      where: { user_id: userId },
+    });
     if (!profile) {
-      const error = new Error('Primero debes crear tu perfil (PUT /api/v1/nutritionists/profile)');
+      const error = new Error(
+        "Primero debes crear tu perfil (PUT /api/v1/nutritionists/profile)",
+      );
       error.statusCode = 404;
       throw error;
     }
@@ -182,14 +217,23 @@ class NutritionistService {
     // Validar estructura de cada slot
     // day_of_week: 0=Domingo, 1=Lunes, ..., 6=Sábado
     for (const slot of slots) {
-      if (slot.day_of_week === undefined || slot.day_of_week === null || !slot.start_time || !slot.end_time) {
-        const error = new Error('Cada slot debe tener day_of_week (0-6), start_time y end_time');
+      if (
+        slot.day_of_week === undefined ||
+        slot.day_of_week === null ||
+        !slot.start_time ||
+        !slot.end_time
+      ) {
+        const error = new Error(
+          "Cada slot debe tener day_of_week (0-6), start_time y end_time",
+        );
         error.statusCode = 400;
         throw error;
       }
       const day = Number(slot.day_of_week);
       if (!Number.isInteger(day) || day < 0 || day > 6) {
-        const error = new Error(`day_of_week "${slot.day_of_week}" no es válido. Debe ser un entero entre 0 (Domingo) y 6 (Sábado)`);
+        const error = new Error(
+          `day_of_week "${slot.day_of_week}" no es válido. Debe ser un entero entre 0 (Domingo) y 6 (Sábado)`,
+        );
         error.statusCode = 400;
         throw error;
       }
@@ -201,16 +245,16 @@ class NutritionistService {
       // 1. Desactivar franjas anteriores (soft-delete)
       await Availability.update(
         { is_active: false },
-        { where: { nutritionist_profile_id: profile.id }, transaction: t }
+        { where: { nutritionist_profile_id: profile.id }, transaction: t },
       );
 
       // 2. Insertar las nuevas franjas con bulkCreate (un solo INSERT)
       const newSlots = slots.map((s) => ({
         nutritionist_profile_id: profile.id,
         day_of_week: s.day_of_week,
-        start_time:  s.start_time,
-        end_time:    s.end_time,
-        is_active:   true,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        is_active: true,
       }));
 
       const created = await Availability.bulkCreate(newSlots, {
@@ -219,6 +263,89 @@ class NutritionistService {
       });
 
       return created;
+    });
+
+    return result;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PUT availability – reemplazar franjas (hard delete + bulkCreate)
+  // ─────────────────────────────────────────────────────────────
+  /**
+   * Elimina PERMANENTEMENTE todas las franjas del nutricionista
+   * y crea las nuevas con un bulkCreate dentro de una transacción.
+   *
+   * Diferencia frente a setAvailability: éste usa Availability.destroy
+   * (hard delete) en lugar de soft-delete, lo que mantiene la tabla
+   * limpia sin filas inactivas históricas.
+   *
+   * @param {string} userId   ID del usuario autenticado
+   * @param {Array}  slots    [{ day_of_week, start_time, end_time }]
+   * @returns {Array} Franjas recién creadas
+   */
+  async replaceAvailability(userId, slots) {
+    if (!Array.isArray(slots) || slots.length === 0) {
+      const error = new Error(
+        "Debes enviar al menos una franja horaria en el array `slots`",
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const profile = await NutritionistProfile.findOne({
+      where: { user_id: userId },
+    });
+    if (!profile) {
+      const error = new Error(
+        "Primero debes crear tu perfil (PUT /api/v1/nutritionists/profile)",
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Validar estructura de cada slot
+    for (const slot of slots) {
+      if (
+        slot.day_of_week === undefined ||
+        slot.day_of_week === null ||
+        !slot.start_time ||
+        !slot.end_time
+      ) {
+        const error = new Error(
+          "Cada slot debe tener day_of_week (0-6), start_time y end_time",
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+      const day = Number(slot.day_of_week);
+      if (!Number.isInteger(day) || day < 0 || day > 6) {
+        const error = new Error(
+          `day_of_week "${slot.day_of_week}" no es válido. Debe ser un entero entre 0 (Domingo) y 6 (Sábado)`,
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    const sequelize = NutritionistProfile.sequelize;
+    const result = await sequelize.transaction(async (t) => {
+      // 1. Hard delete: elimina permanentemente las franjas anteriores
+      //    Se filtra por nutritionist_profile_id (FK del perfil).
+      await Availability.destroy({
+        where: { nutritionist_profile_id: profile.id },
+        transaction: t,
+      });
+
+      // 2. Insertar las nuevas franjas de una sola vez (un INSERT)
+      const newSlots = slots.map((s) => ({
+        nutritionist_profile_id: profile.id,
+        day_of_week: Number(s.day_of_week),
+        start_time: s.start_time,
+        end_time: s.end_time,
+        is_active: true,
+      }));
+
+      return Availability.bulkCreate(newSlots, { transaction: t });
     });
 
     return result;
@@ -246,19 +373,19 @@ class NutritionistService {
       include: [
         {
           model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email'],
+          as: "user",
+          attributes: ["id", "name", "email"],
         },
         {
           model: ClinicalTag,
-          as: 'tags',
+          as: "tags",
           through: { attributes: [] },
-          attributes: ['id', 'name', 'category'],
+          attributes: ["id", "name", "category"],
           // Si se filtra por tag, solo incluir perfiles que tengan ese tag
           ...(tagWhere && { where: tagWhere, required: true }),
         },
       ],
-      order: [['rating', 'DESC']],
+      order: [["rating", "DESC"]],
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
       distinct: true, // Necesario para count correcto con includes

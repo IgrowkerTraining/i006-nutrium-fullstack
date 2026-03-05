@@ -132,7 +132,7 @@ const RegisterNutritionistPersonal: React.FC = () => {
     { value: "", label: "Elige una opción" },
     { value: "online", label: "Online" },
     { value: "presencial", label: "Presencial" },
-    { value: "mixta", label: "Mixta" },
+    { value: "hibrido", label: "Híbrido" },
   ];
 
   const formacionOptions = [

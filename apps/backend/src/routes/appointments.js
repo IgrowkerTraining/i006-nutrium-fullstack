@@ -1,6 +1,6 @@
-const express = require('express');
-const appointmentController = require('../controllers/appointmentController');
-const { authenticate } = require('../middleware/auth');
+const express = require("express");
+const appointmentController = require("../controllers/appointmentController");
+const { authenticate } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -15,10 +15,8 @@ const router = express.Router();
 // POST /api/v1/appointments
 // Crear una nueva cita
 // ──────────────────────────────────────────────────────────────
-router.post(
-  '/',
-  authenticate,
-  (req, res) => appointmentController.createAppointment(req, res)
+router.post("/", authenticate, (req, res) =>
+  appointmentController.createAppointment(req, res),
 );
 
 // ──────────────────────────────────────────────────────────────
@@ -27,40 +25,42 @@ router.post(
 // ──────────────────────────────────────────────────────────────
 // NOTA: Esta ruta debe estar ANTES de /:id para evitar que
 // "my-calendar" se interprete como un ID
-router.get(
-  '/my-calendar',
-  authenticate,
-  (req, res) => appointmentController.getMyCalendar(req, res)
+router.get("/my-calendar", authenticate, (req, res) =>
+  appointmentController.getMyCalendar(req, res),
 );
 
 // ──────────────────────────────────────────────────────────────
 // GET /api/v1/appointments/:id
 // Obtener detalles de una cita específica
 // ──────────────────────────────────────────────────────────────
-router.get(
-  '/:id',
-  authenticate,
-  (req, res) => appointmentController.getAppointmentById(req, res)
+router.get("/:id", authenticate, (req, res) =>
+  appointmentController.getAppointmentById(req, res),
+);
+
+router.patch("/:id/confirm", authenticate, (req, res) =>
+  appointmentController.confirmAppointment(req, res),
+);
+
+router.patch("/:id/cancel", authenticate, (req, res) =>
+  appointmentController.cancelAppointment(req, res),
 );
 
 // ──────────────────────────────────────────────────────────────
-// POST /api/v1/appointments/:id/review
-// Dejar reseña sobre una cita concluida
+// PATCH /api/v1/appointments/:id
+// Modificar campos de una cita (solo si está en estado pending)
+// Nota: esta ruta va DESPUÉS de /confirm y /cancel para que
+// '/:id' no capte esas rutas más específicas.
 // ──────────────────────────────────────────────────────────────
-router.post(
-  '/:id/review',
-  authenticate,
-  (req, res) => appointmentController.addReview(req, res)
+router.patch("/:id", authenticate, (req, res) =>
+  appointmentController.update(req, res),
 );
 
 // ──────────────────────────────────────────────────────────────
 // DELETE /api/v1/appointments/:id
 // Cancelar una cita
 // ──────────────────────────────────────────────────────────────
-router.delete(
-  '/:id',
-  authenticate,
-  (req, res) => appointmentController.cancelAppointment(req, res)
+router.delete("/:id", authenticate, (req, res) =>
+  appointmentController.cancelAppointment(req, res),
 );
 
 module.exports = router;

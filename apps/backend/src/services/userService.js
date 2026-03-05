@@ -70,6 +70,15 @@ class UserService {
       throw error;
     }
 
+    // Verificar que la cuenta esté activa (Soft Delete)
+    // Se comprueba DESPUÉS de validar la contraseña: solo un usuario que conoce
+    // sus credenciales recibe esta información, evitando filtrar si una cuenta existe.
+    if (!user.is_active) {
+      const error = new Error('Tu cuenta ha sido desactivada. Contacta al administrador.');
+      error.statusCode = 403;
+      throw error;
+    }
+
     // Generar JWT
     const token = jwt.sign(
       {
