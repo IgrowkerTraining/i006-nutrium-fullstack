@@ -1,0 +1,147 @@
+### Appointments API QA Pack (Sprint 1)
+### Ejecutar con VS Code REST Client
+
+@baseUrl = http://localhost:3000/api/v1
+@patientToken = Bearer REPLACE_WITH_REAL_PATIENT_JWT
+@nutritionistToken = Bearer REPLACE_WITH_REAL_NUTRITIONIST_JWT
+@thirdUserToken = Bearer REPLACE_WITH_REAL_THIRD_USER_JWT
+
+@nutritionistId = 550e8400-e29b-41d4-a716-446655440000
+@appointmentDate = 2026-03-20
+@appointmentId = 1
+
+###########################################################################
+# 1) Happy path - crear turno pendiente (201)
+###########################################################################
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "{{appointmentDate}}",
+  "start_time": "10:00",
+  "end_time": "11:00",
+  "notes": "Primera consulta"
+}
+
+###########################################################################
+# 2) Validación request - falta start_time (400)
+###########################################################################
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "{{appointmentDate}}",
+  "end_time": "11:00",
+  "notes": "Debe fallar por campo faltante"
+}
+
+###########################################################################
+# 3) Validación request - appointment_date inválida (400)
+###########################################################################
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "20-03-2026",
+  "start_time": "10:00",
+  "end_time": "11:00"
+}
+
+###########################################################################
+# 4) Double booking - solapamiento (409)
+###########################################################################
+### Crear primero este turno para fijar franja 14:00-15:00
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "{{appointmentDate}}",
+  "start_time": "14:00",
+  "end_time": "15:00",
+  "notes": "Turno base"
+}
+
+###
+### Intentar crear turno solapado 14:30-15:30 => debe responder 409
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "{{appointmentDate}}",
+  "start_time": "14:30",
+  "end_time": "15:30",
+  "notes": "Debe fallar por solapamiento"
+}
+
+###########################################################################
+# 5) No solapado - borde exacto (201)
+###########################################################################
+### Si existe 14:00-15:00, 15:00-16:00 NO debe solaparse
+POST {{baseUrl}}/appointments
+Authorization: {{patientToken}}
+Content-Type: application/json
+
+{
+  "nutritionist_id": "{{nutritionistId}}",
+  "appointment_date": "{{appointmentDate}}",
+  "start_time": "15:00",
+  "end_time": "16:00",
+  "notes": "Turno contiguo permitido"
+}
+
+###########################################################################
+# 6) Confirmar cita (200)
+###########################################################################
+PATCH {{baseUrl}}/appointments/{{appointmentId}}/confirm
+Authorization: {{nutritionistToken}}
+
+###########################################################################
+# 7) Cancelar cita (200)
+###########################################################################
+PATCH {{baseUrl}}/appointments/{{appointmentId}}/cancel
+Authorization: {{patientToken}}
+
+###########################################################################
+# 8) Re-cancelar o confirmar cancelada (400)
+###########################################################################
+PATCH {{baseUrl}}/appointments/{{appointmentId}}/cancel
+Authorization: {{patientToken}}
+
+###
+PATCH {{baseUrl}}/appointments/{{appointmentId}}/confirm
+Authorization: {{nutritionistToken}}
+
+###########################################################################
+# 9) Calendar y detalle (200)
+###########################################################################
+GET {{baseUrl}}/appointments/my-calendar
+Authorization: {{patientToken}}
+
+###
+GET {{baseUrl}}/appointments/my-calendar
+Authorization: {{nutritionistToken}}
+
+###
+GET {{baseUrl}}/appointments/{{appointmentId}}
+Authorization: {{patientToken}}
+
+###########################################################################
+# 10) Permisos y JWT (403 / 401)
+###########################################################################
+### Tercero ajeno a la cita => 403
+GET {{baseUrl}}/appointments/{{appointmentId}}
+Authorization: {{thirdUserToken}}
+
+###
+### Sin token => 401
+GET {{baseUrl}}/appointments/my-calendar
