@@ -154,10 +154,10 @@ const RegisterPatientPersonal: React.FC = () => {
   ];
 
   const modalidadOptions = [
-    { value: "", label: "Virtual / Presencial / Mixto" },
+    { value: "", label: "Virtual / Presencial / Híbrido" },
     { value: "online", label: "Virtual" },
     { value: "presencial", label: "Presencial" },
-    { value: "mixto", label: "Mixto" },
+    { value: "hibrido", label: "Híbrido" },
   ];
 
   const disponibilidadOptions = [

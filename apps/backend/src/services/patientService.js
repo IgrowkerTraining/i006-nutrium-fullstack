@@ -1,4 +1,4 @@
-const { Patient, ClinicalTag } = require('../models');
+const { Patient, ClinicalTag } = require("../models");
 
 /**
  * PatientService
@@ -22,15 +22,15 @@ class PatientService {
       include: [
         {
           model: ClinicalTag,
-          as: 'tags',
+          as: "tags",
           through: { attributes: [] }, // Oculta columnas de la tabla pivote
-          attributes: ['id', 'name', 'category'],
+          attributes: ["id", "name", "category"],
         },
       ],
     });
 
     if (!profile) {
-      const error = new Error('El paciente aún no tiene perfil creado');
+      const error = new Error("El paciente aún no tiene perfil creado");
       error.statusCode = 404;
       throw error;
     }
@@ -46,14 +46,25 @@ class PatientService {
    * Usa findOrCreate para evitar duplicados basados en user_id.
    *
    * @param {string} userId      - ID UUID del usuario autenticado
-   * @param {Object} profileData - { birth_date, gender, health_goals }
+   * @param {Object} profileData - { birth_date, gender, health_goals, languages, modality, profile_picture, country, city }
    * @param {Array}  tagIds      - Array opcional de IDs de ClinicalTag
    * @returns {Object} { profile, created }
    */
   async upsertProfile(userId, profileData, tagIds = []) {
-    const { birth_date, gender, health_goals } = profileData;
+    const {
+      birth_date,
+      gender,
+      health_goals,
+      languages,
+      modality,
+      profile_picture,
+      country,
+      city,
+    } = profileData;
 
-    const existingProfile = await Patient.findOne({ where: { user_id: userId } });
+    const existingProfile = await Patient.findOne({
+      where: { user_id: userId },
+    });
 
     let profile;
     let created = false;
@@ -65,15 +76,26 @@ class PatientService {
         birth_date,
         gender: gender || null,
         health_goals: health_goals || null,
+        languages: languages || null,
+        modality: modality || null,
+        profile_picture: profile_picture || null,
+        country: country || null,
+        city: city || null,
       });
       created = true;
     } else {
       // ── ACTUALIZAR ────────────────────────────────────────
       // Solo se sobreescriben los campos que llegan en el body
       const updatePayload = {};
-      if (birth_date !== undefined)    updatePayload.birth_date    = birth_date;
-      if (gender !== undefined)        updatePayload.gender        = gender;
-      if (health_goals !== undefined)  updatePayload.health_goals  = health_goals;
+      if (birth_date !== undefined) updatePayload.birth_date = birth_date;
+      if (gender !== undefined) updatePayload.gender = gender;
+      if (health_goals !== undefined) updatePayload.health_goals = health_goals;
+      if (languages !== undefined) updatePayload.languages = languages;
+      if (modality !== undefined) updatePayload.modality = modality;
+      if (profile_picture !== undefined)
+        updatePayload.profile_picture = profile_picture;
+      if (country !== undefined) updatePayload.country = country;
+      if (city !== undefined) updatePayload.city = city;
 
       await existingProfile.update(updatePayload);
       profile = existingProfile;
@@ -88,16 +110,20 @@ class PatientService {
      *     VALUES (...) para cada tagId recibido.
      */
     if (tagIds.length > 0) {
-      const allNumeric = tagIds.every((id) => Number.isInteger(Number(id)) && Number(id) > 0);
+      const allNumeric = tagIds.every(
+        (id) => Number.isInteger(Number(id)) && Number(id) > 0,
+      );
       if (!allNumeric) {
-        const error = new Error('tag_ids debe ser un array de IDs numéricos enteros positivos');
+        const error = new Error(
+          "tag_ids debe ser un array de IDs numéricos enteros positivos",
+        );
         error.statusCode = 400;
         throw error;
       }
 
       const tags = await ClinicalTag.findAll({ where: { id: tagIds } });
       if (tags.length !== tagIds.length) {
-        const error = new Error('Uno o más tag_ids son inválidos o no existen');
+        const error = new Error("Uno o más tag_ids son inválidos o no existen");
         error.statusCode = 400;
         throw error;
       }
@@ -112,4 +138,3 @@ class PatientService {
 }
 
 module.exports = new PatientService();
-
