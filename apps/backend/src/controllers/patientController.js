@@ -1,4 +1,5 @@
 const patientService = require("../services/patientService");
+const matchmakingService = require("../services/matchmakingService");
 const Validator = require("../utils/validator");
 
 /**
@@ -181,6 +182,46 @@ class PatientController {
       const statusCode = error.statusCode || 500;
       const message =
         statusCode < 500 ? error.message : "Error al guardar el perfil";
+      return res.status(statusCode).json({ success: false, message });
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // GET /api/v1/patients/:id/recommendations
+  // ──────────────────────────────────────────────────────────────
+  /**
+   * Devuelve los nutricionistas recomendados por el motor de IA
+   * para el paciente cuyo UUID coincide con :id.
+   *
+   * Seguridad: un paciente solo puede consultar sus propias
+   * recomendaciones (req.user.id === req.params.id).
+   *
+   * Requiere: Bearer token con role 'patient'
+   */
+  async getRecommendations(req, res) {
+    try {
+      // ── Filtro de seguridad: solo el propio paciente ──────────────────────
+      if (req.user.id !== req.params.id) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "No tienes permiso para ver las recomendaciones de otro paciente.",
+        });
+      }
+
+      const matches = await matchmakingService.getRecommendationsForPatient(
+        req.params.id,
+      );
+
+      return res.status(200).json({ success: true, data: matches });
+    } catch (error) {
+      console.error("[PatientController.getRecommendations]", error.message);
+
+      const statusCode = error.statusCode || 500;
+      const message =
+        statusCode < 500
+          ? error.message
+          : "Error al obtener las recomendaciones de nutricionistas";
       return res.status(statusCode).json({ success: false, message });
     }
   }
