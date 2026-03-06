@@ -69,10 +69,15 @@ const RegisterNutritionistProfessional: React.FC = () => {
     if (!form.ciudad.trim()) return setError("Introduce tu ciudad.");
     if (!form.tituloHabilitante.trim())
       return setError("Introduce tu título habilitante.");
+    if (String(form.anosExperiencia).trim() === "")
+      return setError("Introduce tus años de experiencia.");
+    if (isNaN(Number(form.anosExperiencia)) || Number(form.anosExperiencia) < 0)
+      return setError("Los años de experiencia deben ser un número mayor o igual a 0.");
+    if (selectedTags.length === 0)
+      return setError("Selecciona al menos una especialidad.");
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...form, tagIds: selectedTags }));
     navigate("/register/photo");
-
   };
 
   return (
@@ -147,11 +152,12 @@ const RegisterNutritionistProfessional: React.FC = () => {
         <div className="space-y-2">
           <label className="text-sm font-medium">Especialidades*</label>
           {[
-            { id: 1, name: "Diabetes" },
-            { id: 2, name: "Nutrición deportiva" },
-            { id: 3, name: "Pérdida de peso" },
-            { id: 4, name: "Nutrición infantil" },
-            { id: 5, name: "Vegetarianismo/Veganismo" },
+            { id: 1, name: "Diabetes tipo 2" },
+            { id: 8, name: "Nutrición deportiva" },
+            { id: 16, name: "Pérdida de peso" },
+            { id: 9, name: "Nutrición pediátrica" },
+            { id: 11, name: "Nutrición vegetariana" },
+            { id: 18, name: "Salud digestiva" },
           ].map((tag) => (
             <label key={tag.id} className="flex items-center gap-2">
               <input
@@ -170,8 +176,6 @@ const RegisterNutritionistProfessional: React.FC = () => {
           ))}
         </div>
 
-
-
         <Button type="submit" className="w-full">
           Confirmar
         </Button>
@@ -188,6 +192,8 @@ const RegisterNutritionistProfessional: React.FC = () => {
                 pais: "AR",
                 ciudad: "Buenos Aires",
                 tituloHabilitante: "Lic. en Nutrición",
+                anosExperiencia: "5",
+                tagIds: [1],
               }));
               navigate("/register/photo");
             }}
@@ -195,7 +201,6 @@ const RegisterNutritionistProfessional: React.FC = () => {
             [DEV] Skip
           </Button>
         )}
-
 
         <Button
           type="button"

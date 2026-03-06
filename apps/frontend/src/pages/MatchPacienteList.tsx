@@ -31,13 +31,14 @@ const pacientes = [
 ];
 
 const recomendados = [...pacientes] //hacemos spread para no mutar el array original
-  .filter((p) => p.compatibilidad >= 80)
   .sort((a, b) => b.compatibilidad - a.compatibilidad);
 
 const MatchPacienteList: React.FC = () => {
+
    return (
     <AppLayout>
         <p className="text-[1.25em] font-bold mb-4 ml-4">Información de pacientes</p>
+
       {recomendados.map((p) => (
         <div key={p.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">

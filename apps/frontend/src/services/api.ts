@@ -168,6 +168,7 @@ export const api = {
     };
   }
   const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.NUTRITIONISTS}/profile`;
+  console.log("[createNutritionistProfile] Sending payload:", JSON.stringify(data, null, 2));
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -178,10 +179,118 @@ export const api = {
   });
   const result = await readJsonSafely(response);
   if (!response.ok) {
+    console.error("[createNutritionistProfile] Backend error:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: result,
+    });
+    const missingFields = result?.data?.missing_fields;
+    if (Array.isArray(missingFields) && missingFields.length > 0) {
+      throw new Error(`${result?.message || "Faltan campos obligatorios"}: ${missingFields.join(", ")}`);
+    }
+
+    const validationErrors = result?.data?.errors;
+    if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+      const messages = validationErrors
+        .map((e: any) => {
+          if (typeof e === "string") return e;
+          if (typeof e?.message === "string") return e.message;
+          return null;
+        })
+        .filter(Boolean);
+      if (messages.length > 0) {
+        throw new Error(messages.join(" | "));
+      }
+    }
+
     throw new Error(result?.message || "Error al crear perfil");
   }
   return result;
 },
+
+  async upsertPatientProfile(token: string, data: any): Promise<any> {
+    if (useMocks) {
+      return {
+        success: true,
+        message: "Mock patient profile updated",
+        data: {
+          profile: {
+            ...data,
+            user_id: mockPatient.id,
+          },
+        },
+      };
+    }
+
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PATIENTS.PROFILE}`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al guardar el perfil del paciente");
+    }
+    return result;
+  },
+
+  async getPatientRecommendations(token: string, patientUserId: string): Promise<any[]> {
+    if (useMocks) {
+      return [];
+    }
+    const url = `${API_ENDPOINTS.BASE}/patients/${patientUserId}/recommendations`;
+    const response = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      console.error("[getPatientRecommendations] Error:", { status: response.status, body: result });
+      throw new Error(result?.message || "Error al obtener recomendaciones");
+    }
+    return result?.data || [];
+  },
+
+  async getPatientProfile(token: string): Promise<any> {
+    if (useMocks) {
+      return {
+        success: true,
+        message: "Mock patient profile",
+        data: {
+          profile: {
+            user_id: mockPatient.id,
+            birth_date: mockPatient.birthDate,
+            gender: "",
+            languages: ["es"],
+            modality: mockPatient.modality,
+            country: mockPatient.country,
+            city: mockPatient.city,
+          },
+        },
+      };
+    }
+
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PATIENTS.PROFILE}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al obtener el perfil del paciente");
+    }
+    return result;
+  },
 
 };
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { api } from "../services/api";
+import { storage } from "../utils/storage";
 import modalidad from "../assets/Modalidad.png";
 import disponibilidad from "../assets/Disponibilidad.png";
 import cerrar from "../assets/Cerrar.png";
@@ -12,32 +13,69 @@ import noVerificado from "../assets/estado=noVerificado.png"
 
 
 //Datos hardcodeados para pruebas
-/* const nutricionistas = [
+const mockNutricionistas = [
   {
-    name: "Laura Gonzalez",
-    specialty: "Nutrición clínica",
-    matrícula: "MP 4597",
-    compatibilidad: 98,
-    modalidad: "Virtual",
-    disponibilidad: "Mañana"
+    id: "mock-n1",
+    user: { name: "Laura Gonzalez" },
+    bio: "Nutrición clínica",
+    license_number: "MP 4597",
+    modality: "Virtual",
+    years_of_experience: 5,
+    profile_picture_url: nutricionista,
+    tags: [
+      { id: "mock-t1", name: "Nutrición clínica" },
+      { id: "mock-t2", name: "Pérdida de peso" },
+    ],
   },
   {
-    name: "Maria Acosta",
-    specialty: "Nutrición clínica",
-    matrícula: "MP 1234",
-    compatibilidad: 95,
-    modalidad: "Presencial",
-    disponibilidad: "Tarde"
-  }
-]; */
+    id: "mock-n2",
+    user: { name: "Maria Acosta" },
+    bio: "Nutrición deportiva",
+    license_number: "MP 1234",
+    modality: "Presencial",
+    years_of_experience: 3,
+    profile_picture_url: nutricionista,
+    tags: [{ id: "mock-t3", name: "Deportiva" }],
+  },
+];
 
 
 const MatchNutriList: React.FC = () => {
-  const [nutricionistas, setNutricionistas] = useState([]);
+  const [nutricionistas, setNutricionistas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const token = storage.getToken();
+  const user = storage.getUser();
+  const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
+  const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
   
   useEffect(() => {
-    api.getNutritionists().then(setNutricionistas);
-  }, []);
+    if (!hasRealSession || !token || !user?.id) return;
+    setLoading(true);
+    api.getPatientRecommendations(token, user.id)
+      .then((matches) => {
+        if (matches.length > 0) {
+          // Mapear respuesta de IA al formato que espera la UI
+          const mapped = matches.map((m: any) => ({
+            id: m.nutritionist_id,
+            user: { name: m.nutritionist_name },
+            bio: m.reasoning || "Nutricionista recomendado",
+            license_number: "",
+            modality: "",
+            years_of_experience: m.years_of_experience || 0,
+            profile_picture_url: m.profile_picture_url,
+            tags: m.specializations?.map((s: string, i: number) => ({ id: `t${i}`, name: s })) || [],
+            score: m.score,
+          }));
+          setNutricionistas(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn("[MatchNutriList] Recommendations failed, using mock data:", err.message);
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, [hasRealSession]);
   
   /* const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
     .filter((n) => n.compatibilidad >= 80)
@@ -50,7 +88,14 @@ const MatchNutriList: React.FC = () => {
         <p className="text-[0.875em] leading-[1.375em]">Estos nutricionistas tienen mas compatibilidad con lo que estás buscando.</p>
       </article>
       <p className="text-[0.813em] leading-[1.25em] ml-4 mb-12">* Las recomendaciones se basan en la información proporcionada y no sustituyen evualuación médica</p>
-      {nutricionistas.map((n: any) => (
+
+      {!hasRealSession && (
+        <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg">
+          Necesitas iniciar sesión real para ver recomendaciones.
+        </div>
+      )}
+
+      {displayNutricionistas.map((n: any) => (
         <div key={n.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <img src={n.profile_picture_url || nutricionista} alt="foto perfil nutricionista" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />

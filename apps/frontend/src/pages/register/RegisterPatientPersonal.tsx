@@ -138,6 +138,8 @@ const RegisterPatientPersonal: React.FC = () => {
         role: "patient",
       });
 
+      sessionStorage.setItem("nutrium_temp_password", form.password);
+
       navigate("/register/patient/health");
     } catch (err: any) {
       setError(err?.message || "Error inesperado");
@@ -186,7 +188,7 @@ const RegisterPatientPersonal: React.FC = () => {
         )}
 
         <Input label="Nombre completo*" name="fullName" required value={form.fullName} onChange={handleChange} />
-        <Input label="Fecha de nacimiento*" name="birthDate" required value={form.birthDate} onChange={handleChange} />
+        <Input label="Fecha de nacimiento*" name="birthDate" type="date" required value={form.birthDate} onChange={handleChange} />
         <Select label="País*" value={form.country} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} options={countryOptions} />
         <Input label="Ciudad*" name="city" required value={form.city} onChange={handleChange} />
         <Input label="Correo electrónico*" name="email" type="email" required value={form.email} onChange={handleChange} />

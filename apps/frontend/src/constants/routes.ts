@@ -25,6 +25,9 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register',
   },
   HEALTH: '/health',
+  PATIENTS: {
+    PROFILE: '/patients/profile',
+  },
   NUTRITIONISTS: '/nutritionists',
 } as const;
 

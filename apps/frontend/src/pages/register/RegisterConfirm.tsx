@@ -4,6 +4,7 @@ import { AuthLayout } from "../../components/layout/AuthLayout";
 import { Button } from "../../components/common/Button";
 import { ReadOnlyField } from "../../components/common/ReadOnlyField";
 import { api } from "../../services/api";
+import { storage } from "../../utils/storage";
 
 type NutritionistPersonal = {
   fullName: string;
@@ -48,6 +49,15 @@ function safeParse<T>(key: string): T | null {
     return null;
   }
 }
+
+const LABEL_MAP: Record<string, Record<string, string>> = {
+  modalidad: { online: "Virtual", presencial: "Presencial", hibrido: "Híbrido" },
+  disponibilidad: { manana: "Mañana", tarde: "Tarde", flexible: "Flexible" },
+  country: { AR: "Argentina", UY: "Uruguay", ES: "España" },
+};
+
+const displayLabel = (field: string, value: string) =>
+  LABEL_MAP[field]?.[value] || value;
 
 const RegisterConfirm: React.FC = () => {
   const navigate = useNavigate();
@@ -115,24 +125,86 @@ const RegisterConfirm: React.FC = () => {
           return navigate("/register/nutritionist/personal");
         }
 
-        const { token } = await api.login({
+        const { token, user } = await api.login({
           email: nutriPersonal.email,
           password,
         });
+        storage.setToken(token);
+        if (user) storage.setUser(user);
 
         // 2. Crear perfil de nutricionista
-        await api.createNutritionistProfile(token, {
+        const profilePayload = {
           license_number: nutriProfessional.matricula,
           bio: nutriPersonal.especializacion || "Nutricionista profesional",
           modality: nutriPersonal.modalidad || "online",
           years_of_experience: parseInt(nutriProfessional.anosExperiencia) || 0,
+          country: nutriProfessional.pais,
+          city: nutriProfessional.ciudad,
           tag_ids: nutriProfessional.tagIds || [],
-        });
+        };
+        console.log("[RegisterConfirm] Profile payload:", profilePayload);
+
+        try {
+          await api.createNutritionistProfile(token, profilePayload);
+        } catch (profileErr: any) {
+          console.warn("[RegisterConfirm] Profile creation failed:", profileErr.message);
+          // No bloquear el flujo: la cuenta ya existe, el perfil se puede completar después
+          setError(
+            "Tu cuenta fue creada pero el perfil no se pudo guardar (error del servidor). " +
+            "Podrás completarlo después. Redirigiendo..."
+          );
+          // Esperar un momento para que el usuario vea el mensaje
+          await new Promise((r) => setTimeout(r, 2000));
+        }
 
         // 3. Limpiar contraseña temporal
         sessionStorage.removeItem("nutrium_temp_password");
 
         return navigate("/match-nutricionista");
+      }
+
+      if (role === "patient" && patientPersonal && patientHealth) {
+        setIsLoading(true);
+        setError(null);
+
+        const password = sessionStorage.getItem("nutrium_temp_password");
+        if (!password) {
+          alert("Sesión expirada. Vuelve a introducir tus datos.");
+          return navigate("/register/patient/personal");
+        }
+
+        const { token, user } = await api.login({
+          email: patientPersonal.email,
+          password,
+        });
+        storage.setToken(token);
+        if (user) storage.setUser(user);
+
+        const patientProfilePayload = {
+          birth_date: patientPersonal.birthDate,
+          gender: "prefiero_no_decir",
+          health_goals: patientPersonal.objetivo || "Mejorar mi salud general",
+          languages: ["es"],
+          modality: patientPersonal.modalidad,
+          country: displayLabel("country", patientPersonal.country),
+          city: patientPersonal.city,
+        };
+        console.log("[RegisterConfirm] Patient profile payload:", patientProfilePayload);
+
+        try {
+          await api.upsertPatientProfile(token, patientProfilePayload);
+        } catch (profileErr: any) {
+          console.warn("[RegisterConfirm] Patient profile creation failed:", profileErr.message);
+          setError(
+            "Tu cuenta fue creada pero el perfil no se pudo guardar: " + profileErr.message +
+            ". Redirigiendo..."
+          );
+          await new Promise((r) => setTimeout(r, 2500));
+        }
+
+        sessionStorage.removeItem("nutrium_temp_password");
+
+        return navigate("/match-paciente");
       }
 
       if (role === "patient") return navigate("/match-paciente");
@@ -188,10 +260,10 @@ const RegisterConfirm: React.FC = () => {
 
               <ReadOnlyField label="Nombre completo" value={nutriPersonal.fullName} />
               <ReadOnlyField label="Correo electrónico" value={nutriPersonal.email} />
-              <ReadOnlyField label="Modalidad" value={nutriPersonal.modalidad} />
+              <ReadOnlyField label="Modalidad" value={displayLabel("modalidad", nutriPersonal.modalidad)} />
               <ReadOnlyField label="Formación" value={nutriPersonal.formacion} />
               <ReadOnlyField label="Especialización" value={nutriPersonal.especializacion} />
-              <ReadOnlyField label="Disponibilidad" value={nutriPersonal.disponibilidad} />
+              <ReadOnlyField label="Disponibilidad" value={displayLabel("disponibilidad", nutriPersonal.disponibilidad)} />
             </section>
 
             <section className="space-y-3 border-t pt-4">
@@ -233,11 +305,11 @@ const RegisterConfirm: React.FC = () => {
 
               <ReadOnlyField label="Nombre completo" value={patientPersonal.fullName} />
               <ReadOnlyField label="Fecha de nacimiento" value={patientPersonal.birthDate} />
-              <ReadOnlyField label="País" value={patientPersonal.country} />
+              <ReadOnlyField label="País" value={displayLabel("country", patientPersonal.country)} />
               <ReadOnlyField label="Ciudad" value={patientPersonal.city} />
               <ReadOnlyField label="Correo electrónico" value={patientPersonal.email} />
-              <ReadOnlyField label="Modalidad" value={patientPersonal.modalidad} />
-              <ReadOnlyField label="Disponibilidad" value={patientPersonal.disponibilidad} />
+              <ReadOnlyField label="Modalidad" value={displayLabel("modalidad", patientPersonal.modalidad)} />
+              <ReadOnlyField label="Disponibilidad" value={displayLabel("disponibilidad", patientPersonal.disponibilidad)} />
               <ReadOnlyField label="Objetivo" value={patientPersonal.objetivo} />
             </section>
 
