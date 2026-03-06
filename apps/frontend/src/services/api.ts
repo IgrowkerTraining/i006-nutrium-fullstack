@@ -223,6 +223,7 @@ export const api = {
     }
 
     const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PATIENTS.PROFILE}`;
+    console.log("[upsertPatientProfile] Sending payload:", JSON.stringify(data, null, 2));
     const response = await fetch(url, {
       method: "PUT",
       headers: {

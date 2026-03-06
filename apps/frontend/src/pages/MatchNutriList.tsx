@@ -50,32 +50,39 @@ const MatchNutriList: React.FC = () => {
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
   
   useEffect(() => {
-    if (!hasRealSession || !token || !user?.id) return;
     setLoading(true);
-    api.getPatientRecommendations(token, user.id)
-      .then((matches) => {
-        if (matches.length > 0) {
-          // Mapear respuesta de IA al formato que espera la UI
-          const mapped = matches.map((m: any) => ({
-            id: m.nutritionist_id,
-            user: { name: m.nutritionist_name },
-            bio: m.reasoning || "Nutricionista recomendado",
-            license_number: "",
-            modality: "",
-            years_of_experience: m.years_of_experience || 0,
-            profile_picture_url: m.profile_picture_url,
-            tags: m.specializations?.map((s: string, i: number) => ({ id: `t${i}`, name: s })) || [],
-            score: m.score,
-          }));
-          setNutricionistas(mapped);
+    // 1. Intentar GET /nutritionists (endpoint público, no necesita token)
+    api.getNutritionists()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setNutricionistas(data);
+        } else if (hasRealSession && token && user?.id) {
+          // 2. Si no hay nutricionistas en BD, intentar recomendaciones IA
+          return api.getPatientRecommendations(token, user.id)
+            .then((matches) => {
+              if (matches.length > 0) {
+                const mapped = matches.map((m: any) => ({
+                  id: m.nutritionist_id,
+                  user: { name: m.nutritionist_name },
+                  bio: m.reasoning || "Nutricionista recomendado",
+                  license_number: "",
+                  modality: "",
+                  years_of_experience: m.years_of_experience || 0,
+                  profile_picture_url: m.profile_picture_url,
+                  tags: m.specializations?.map((s: string, i: number) => ({ id: `t${i}`, name: s })) || [],
+                  score: m.score,
+                }));
+                setNutricionistas(mapped);
+              }
+            });
         }
       })
       .catch((err) => {
-        console.warn("[MatchNutriList] Recommendations failed, using mock data:", err.message);
+        console.warn("[MatchNutriList] Failed to load nutritionists, using mock data:", err.message);
         setError(err.message);
       })
       .finally(() => setLoading(false));
-  }, [hasRealSession]);
+  }, []);
   
   /* const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
     .filter((n) => n.compatibilidad >= 80)

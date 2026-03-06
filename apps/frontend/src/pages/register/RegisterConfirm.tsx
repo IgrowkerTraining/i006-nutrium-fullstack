@@ -51,7 +51,7 @@ function safeParse<T>(key: string): T | null {
 }
 
 const LABEL_MAP: Record<string, Record<string, string>> = {
-  modalidad: { online: "Virtual", presencial: "Presencial", hibrido: "Híbrido" },
+  modalidad: { online: "Virtual", presencial: "Presencial", hibrido: "Mixto" },
   disponibilidad: { manana: "Mañana", tarde: "Tarde", flexible: "Flexible" },
   country: { AR: "Argentina", UY: "Uruguay", ES: "España" },
 };
