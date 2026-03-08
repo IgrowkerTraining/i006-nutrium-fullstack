@@ -28,6 +28,7 @@ import RecuperarPassword from "../pages/RecuperarPassword";
 import HomePage from "../pages/HomePage";
 import MatchNutriList from "../pages/MatchNutriList";
 import MatchPacienteList from "../pages/MatchPacienteList";
+import PefilesMatch from "../pages/PerfilesMatch";
 
 
 const MatchIndexRedirect: React.FC = () => {
@@ -155,6 +156,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/match" element={<MatchIndexRedirect />} />
         <Route path="/cuestionario-personal" element={<CuestionarioPersonal />} />
         <Route path="/cuestionario-salud" element={<CuestionarioSalud />} />
+        <Route path="/perfiles-match/:id" element={<PefilesMatch />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/landing-acceso" replace />} />

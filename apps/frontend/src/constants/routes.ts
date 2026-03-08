@@ -16,6 +16,7 @@ export const ROUTES = {
   LANDING_ACCESO: '/landing-acceso',
   TERMINOS_Y_CONDICIONES: '/terminos-y-condiciones',
   HOME_PAGE: '/home-page',
+  PERFILES_MATCH: '/perfiles-match',
 } as const;
 
 export const API_ENDPOINTS = {

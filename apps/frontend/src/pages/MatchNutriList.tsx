@@ -10,7 +10,7 @@ import { Button } from "../components/common/Button";
 import AppLayout from "../components/layout/AppLayout";
 import verificado from "../assets/estado=Verificado.png"
 import noVerificado from "../assets/estado=noVerificado.png"
-
+import { useNavigate } from "react-router-dom";
 
 //Datos hardcodeados para pruebas
 const mockNutricionistas = [
@@ -26,6 +26,7 @@ const mockNutricionistas = [
       { id: "mock-t1", name: "Nutrición clínica" },
       { id: "mock-t2", name: "Pérdida de peso" },
     ],
+    compatibility: 78,
   },
   {
     id: "mock-n2",
@@ -36,6 +37,7 @@ const mockNutricionistas = [
     years_of_experience: 3,
     profile_picture_url: nutricionista,
     tags: [{ id: "mock-t3", name: "Deportiva" }],
+    compatibility: 92,
   },
 ];
 
@@ -48,44 +50,38 @@ const MatchNutriList: React.FC = () => {
   const user = storage.getUser();
   const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
+  const navigate = useNavigate();
   
   useEffect(() => {
+    if (!hasRealSession || !token || !user?.id) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    // 1. Intentar GET /nutritionists (endpoint público, no necesita token)
-    api.getNutritionists()
-      .then((data) => {
-        if (data && data.length > 0) {
-          setNutricionistas(data);
-        } else if (hasRealSession && token && user?.id) {
-          // 2. Si no hay nutricionistas en BD, intentar recomendaciones IA
-          return api.getPatientRecommendations(token, user.id)
-            .then((matches) => {
-              if (matches.length > 0) {
-                const mapped = matches.map((m: any) => ({
-                  id: m.nutritionist_id,
-                  user: { name: m.nutritionist_name },
-                  bio: m.reasoning || "Nutricionista recomendado",
-                  license_number: "",
-                  modality: "",
-                  years_of_experience: m.years_of_experience || 0,
-                  profile_picture_url: m.profile_picture_url,
-                  tags: m.specializations?.map((s: string, i: number) => ({ id: `t${i}`, name: s })) || [],
-                  score: m.score,
-                }));
-                setNutricionistas(mapped);
-              }
-            });
+    api.getPatientRecommendations(token, user.id)
+      .then((matches) => {
+        if (matches.length > 0) {
+          const mapped = matches.map((m: any) => ({
+            id: m.nutritionist_id,
+            user: { name: m.nutritionist_name },
+            bio: m.reasoning || "Nutricionista recomendado",
+            license_number: "",
+            modality: "",
+            years_of_experience: m.years_of_experience || 0,
+            profile_picture_url: m.profile_picture_url,
+            compatibility: m.score ?? 0,
+          }));
+          setNutricionistas(mapped);
         }
       })
       .catch((err) => {
-        console.warn("[MatchNutriList] Failed to load nutritionists, using mock data:", err.message);
+        console.warn("[MatchNutriList] Failed to load recommendations:", err.message);
         setError(err.message);
       })
       .finally(() => setLoading(false));
   }, []);
   
   /* const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
-    .filter((n) => n.compatibilidad >= 80)
     .sort((a, b) => b.compatibilidad - a.compatibilidad); */
 
   return (
@@ -103,7 +99,7 @@ const MatchNutriList: React.FC = () => {
       )}
 
       {displayNutricionistas.map((n: any) => (
-        <div key={n.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
+        <div key={n.id} onClick={() => navigate(`/perfiles-match/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <img src={n.profile_picture_url || nutricionista} alt="foto perfil nutricionista" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />
             <article>
@@ -113,11 +109,11 @@ const MatchNutriList: React.FC = () => {
                 <img src={noVerificado} alt="no verificado" />
                 <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">Matrícula: {n.license_number}</p>
               </div>
-              {n.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {n.tags.map((tag: any) => (
-                    <span key={tag.id} className="bg-[#7ECD43] text-white px-2 py-1 rounded-xl text-xs">{tag.name}</span>
-                  ))}
+              {n.compatibility != null && (
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="bg-[#7ECD43] text-[#FFFFFF] px-2 py-1 rounded-xl text-[0.75em] font-bold">
+                    Compatibilidad: {Math.round(n.compatibility)}%
+                  </span>
                 </div>
               )}
             </article>
@@ -139,7 +135,7 @@ const MatchNutriList: React.FC = () => {
               </article>
             </div>
           </div>
-            <Button className="w-[90%] mx-auto mb-4">Agendar cita</Button>
+            <Button onClick={(e) => e.stopPropagation()} className="w-[90%] mx-auto mb-4">Agendar cita</Button>
         </div>
       ))}
     </AppLayout>
