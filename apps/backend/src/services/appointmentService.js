@@ -329,12 +329,12 @@ class AppointmentService {
         {
           model: User,
           as: "patient",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
         {
           model: User,
           as: "nutritionist",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
       ],
       order: [
@@ -350,12 +350,12 @@ class AppointmentService {
         {
           model: User,
           as: "patient",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
         {
           model: User,
           as: "nutritionist",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
       ],
     });
@@ -544,12 +544,12 @@ class AppointmentService {
         {
           model: User,
           as: "patient",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
         {
           model: User,
           as: "nutritionist",
-          attributes: ["id", "email", "first_name", "last_name"],
+          attributes: ["id", "email", "name"],
         },
       ],
     });
