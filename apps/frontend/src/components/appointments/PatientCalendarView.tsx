@@ -1,17 +1,94 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AppointmentCard } from "./AppointmentCard";
+import { api } from "../../services/api";
+import { storage } from "../../utils/storage";
+
+const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+interface AppointmentData {
+  id: string;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  notes?: string;
+  patient: { id: string; name: string; email: string };
+  nutritionist: { id: string; name: string; email: string };
+}
 
 export const PatientCalendarView: React.FC = () => {
-  const appointments = [
-    { month: "Mar", day: "25", name: "Dra. Laura González", time: "12:00", modality: "Virtual" },
-    { month: "Apr", day: "12", name: "Pedro Gomez", time: "12:00", modality: "Virtual" },
-  ];
+  const [appointments, setAppointments] = useState<AppointmentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAppointments = useCallback(async () => {
+    const token = storage.getToken();
+    if (!token) {
+      setError("No se encontró token de autenticación");
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      const data = await api.getMyCalendar(token);
+      setAppointments(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Error al cargar las citas");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  const handleCancel = async (appointmentId: string) => {
+    const token = storage.getToken();
+    if (!token) return;
+    try {
+      await api.cancelAppointment(token, appointmentId);
+      await fetchAppointments();
+    } catch (err: any) {
+      setError(err.message || "Error al cancelar la cita");
+    }
+  };
+
+  if (loading) {
+    return <p className="text-slate-500 mt-4">Cargando citas...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500 font-medium mt-4">{error}</p>;
+  }
+
+  if (appointments.length === 0) {
+    return <p className="text-red-500 font-medium mt-4">Aún no tienes citas agendadas</p>;
+  }
 
   return (
     <section className="space-y-4 mt-4">
-      {appointments.map((a, i) => (
-        <AppointmentCard key={i} {...a} />
-      ))}
+      {appointments.map((a) => {
+        const date = new Date(a.appointment_date + "T00:00:00");
+        const month = MONTHS[date.getMonth()];
+        const day = String(date.getDate());
+        const time = a.start_time.slice(0, 5) + " - " + a.end_time.slice(0, 5);
+
+        return (
+          <AppointmentCard
+            key={a.id}
+            id={a.id}
+            month={month}
+            day={day}
+            name={a.nutritionist.name}
+            time={time}
+            modality={a.notes || ""}
+            status={a.status}
+            onCancel={() => handleCancel(a.id)}
+          />
+        );
+      })}
     </section>
   );
 };

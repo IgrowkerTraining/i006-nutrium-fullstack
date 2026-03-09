@@ -30,6 +30,11 @@ export const API_ENDPOINTS = {
     PROFILE: '/patients/profile',
   },
   NUTRITIONISTS: '/nutritionists',
+  APPOINTMENTS: {
+    MY_CALENDAR: '/appointments/my-calendar',
+    CONFIRM: (id: string) => `/appointments/${id}/confirm`,
+    CANCEL: (id: string) => `/appointments/${id}/cancel`,
+  },
 } as const;
 
 export const STORAGE_KEYS = {

@@ -258,6 +258,74 @@ export const api = {
     return result?.data || [];
   },
 
+  async getMyCalendar(token: string): Promise<any[]> {
+    if (useMocks) {
+      return [
+        {
+          id: "mock-1",
+          appointment_date: "2026-03-25",
+          start_time: "12:00:00",
+          end_time: "13:00:00",
+          status: "pending",
+          notes: "Virtual",
+          patient: { id: "p1", name: "Clara García", email: "clara@example.com" },
+          nutritionist: { id: "n1", name: "Dra. Laura González", email: "laura@example.com" },
+        },
+        {
+          id: "mock-2",
+          appointment_date: "2026-04-12",
+          start_time: "10:00:00",
+          end_time: "11:00:00",
+          status: "confirmed",
+          notes: "Presencial",
+          patient: { id: "p2", name: "Pedro Gomez", email: "pedro@example.com" },
+          nutritionist: { id: "n2", name: "Dr. Carlos Ruiz", email: "carlos@example.com" },
+        },
+      ];
+    }
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.APPOINTMENTS.MY_CALENDAR}`;
+    const response = await fetch(url, {
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al obtener el calendario");
+    }
+    return result?.data?.appointments || [];
+  },
+
+  async confirmAppointment(token: string, appointmentId: string): Promise<any> {
+    if (useMocks) {
+      return { success: true, message: "Mock confirm" };
+    }
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.APPOINTMENTS.CONFIRM(appointmentId)}`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al confirmar la cita");
+    }
+    return result;
+  },
+
+  async cancelAppointment(token: string, appointmentId: string): Promise<any> {
+    if (useMocks) {
+      return { success: true, message: "Mock cancel" };
+    }
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.APPOINTMENTS.CANCEL(appointmentId)}`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al cancelar la cita");
+    }
+    return result;
+  },
+
   async getPatientProfile(token: string): Promise<any> {
     if (useMocks) {
       return {

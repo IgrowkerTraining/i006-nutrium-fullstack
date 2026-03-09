@@ -2,13 +2,23 @@ import React, { useState } from "react";
 import { CancelAppointmentModal } from "./CancelAppointmentModal";
 
 interface Props {
+  id?: string;
   month: string;
   day: string;
   name: string;
   time: string;
   modality: string;
+  status?: string;
   onCancel?: () => void;
+  onConfirm?: () => void;
 }
+
+const statusLabel: Record<string, { text: string; className: string }> = {
+  pending: { text: "Pendiente", className: "bg-yellow-100 text-yellow-700" },
+  confirmed: { text: "Confirmada", className: "bg-green-100 text-green-700" },
+  completed: { text: "Completada", className: "bg-blue-100 text-blue-700" },
+  cancelled: { text: "Cancelada", className: "bg-red-100 text-red-700" },
+};
 
 export const AppointmentCard: React.FC<Props> = ({
   month,
@@ -16,19 +26,24 @@ export const AppointmentCard: React.FC<Props> = ({
   name,
   time,
   modality,
+  status,
   onCancel,
+  onConfirm,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleConfirmCancel = () => {
     setIsModalOpen(false);
-    onCancel?.(); // 🔥 Aquí luego conectaremos con backend
+    onCancel?.();
   };
+
+  const isCancelled = status === "cancelled";
+  const canConfirm = status === "pending" && onConfirm;
 
   return (
     <>
-      <article className="flex rounded-xl shadow-md overflow-hidden bg-white">
-        
+      <article className={`flex rounded-xl shadow-md overflow-hidden bg-white ${isCancelled ? "opacity-50" : ""}`}>
+
         {/* Fecha lateral */}
         <div className="bg-[#7ECD43] text-white flex flex-col items-center justify-center px-4 py-4">
           <span className="text-sm">{month}</span>
@@ -37,15 +52,24 @@ export const AppointmentCard: React.FC<Props> = ({
 
         {/* Contenido */}
         <div className="flex-1 p-4 relative">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition"
-            aria-label="Cancelar cita"
-          >
-            ✕
-          </button>
+          {!isCancelled && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition"
+              aria-label="Cancelar cita"
+            >
+              ✕
+            </button>
+          )}
 
           <h3 className="font-medium">{name}</h3>
+
+          {/* Status badge */}
+          {status && statusLabel[status] && (
+            <span className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${statusLabel[status].className}`}>
+              {statusLabel[status].text}
+            </span>
+          )}
 
           {/* Hora */}
           <div className="flex items-center gap-2 text-sm text-slate-600 mt-2">
@@ -62,6 +86,16 @@ export const AppointmentCard: React.FC<Props> = ({
             </svg>
             <span>{modality}</span>
           </div>
+
+          {/* Botón confirmar (solo para citas pendientes) */}
+          {canConfirm && (
+            <button
+              onClick={onConfirm}
+              className="mt-3 w-full py-1.5 rounded-xl bg-[#7ECD43] text-white text-sm hover:opacity-90 transition"
+            >
+              Aceptar cita
+            </button>
+          )}
         </div>
       </article>
 

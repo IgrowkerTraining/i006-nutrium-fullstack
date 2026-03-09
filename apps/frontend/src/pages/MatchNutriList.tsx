@@ -10,7 +10,7 @@ import { Button } from "../components/common/Button";
 import AppLayout from "../components/layout/AppLayout";
 import verificado from "../assets/estado=Verificado.png"
 import noVerificado from "../assets/estado=noVerificado.png"
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 //Datos hardcodeados para pruebas
 const mockNutricionistas = [
@@ -51,8 +51,40 @@ const MatchNutriList: React.FC = () => {
   const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  const mapMatches = (matches: any[]) =>
+    matches.map((m: any) => ({
+      id: m.nutritionist_id,
+      user: { name: m.nutritionist_name },
+      bio: m.reasoning || "Nutricionista recomendado",
+      license_number: "",
+      modality: "",
+      years_of_experience: m.years_of_experience || 0,
+      profile_picture_url: m.profile_picture_url,
+      compatibility: m.compatibility_score ?? 0,
+    }));
+
   useEffect(() => {
+    // 1. Si la pantalla de carga ya trajo los matches, usarlos y guardar en cache
+    const stateMatches = (location.state as any)?.matches;
+    if (stateMatches && stateMatches.length > 0) {
+      const mapped = mapMatches(stateMatches);
+      setNutricionistas(mapped);
+      sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
+      return;
+    }
+
+    // 2. Si hay matches cacheados (volviendo de un perfil), usarlos
+    const cached = sessionStorage.getItem("nutrium_matches");
+    if (cached) {
+      try {
+        setNutricionistas(JSON.parse(cached));
+        return;
+      } catch { /* ignorar cache corrupto */ }
+    }
+
+    // 3. Fallback: si se accede directo a esta URL, llamar a la API
     if (!hasRealSession || !token || !user?.id) {
       setLoading(false);
       return;
@@ -61,17 +93,9 @@ const MatchNutriList: React.FC = () => {
     api.getPatientRecommendations(token, user.id)
       .then((matches) => {
         if (matches.length > 0) {
-          const mapped = matches.map((m: any) => ({
-            id: m.nutritionist_id,
-            user: { name: m.nutritionist_name },
-            bio: m.reasoning || "Nutricionista recomendado",
-            license_number: "",
-            modality: "",
-            years_of_experience: m.years_of_experience || 0,
-            profile_picture_url: m.profile_picture_url,
-            compatibility: m.score ?? 0,
-          }));
+          const mapped = mapMatches(matches);
           setNutricionistas(mapped);
+          sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
         }
       })
       .catch((err) => {
