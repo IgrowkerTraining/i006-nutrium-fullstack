@@ -99,8 +99,7 @@ const MatchNutriList: React.FC = () => {
         }
       })
       .catch((err) => {
-        console.warn("[MatchNutriList] Failed to load recommendations:", err.message);
-        setError(err.message);
+        console.warn("[MatchNutriList] IA no disponible, usando mocks:", err.message);
       })
       .finally(() => setLoading(false));
   }, []);

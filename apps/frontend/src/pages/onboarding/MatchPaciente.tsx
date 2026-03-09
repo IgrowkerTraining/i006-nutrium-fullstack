@@ -22,8 +22,9 @@ const Match: React.FC = () => {
         .then(([, matches]) => {
           navigate("/match/nutri-list", { state: { matches } });
         })
-        .catch(() => {
-          navigate("/match/nutri-list");
+        .catch((err) => {
+          console.warn("[MatchPaciente] IA no disponible, usando mocks:", err.message);
+          navigate("/match/nutri-list", { state: { matches: null } });
         });
     } else {
       minDelay.then(() => navigate("/match/nutri-list"));
