@@ -16,7 +16,8 @@ export const ROUTES = {
   LANDING_ACCESO: '/landing-acceso',
   TERMINOS_Y_CONDICIONES: '/terminos-y-condiciones',
   HOME_PAGE: '/home-page',
-  PERFILES_MATCH: '/perfiles-match',
+  PERFILES_MATCH_NUTRICIONISTA: '/perfiles-match-nutri',
+  PERFILES_MATCH_PACIENTE: '/perfiles-match-paciente',
 } as const;
 
 export const API_ENDPOINTS = {

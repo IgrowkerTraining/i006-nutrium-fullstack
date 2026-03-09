@@ -122,7 +122,7 @@ const MatchNutriList: React.FC = () => {
       )}
 
       {displayNutricionistas.map((n: any) => (
-        <div key={n.id} onClick={() => navigate(`/perfiles-match/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
+        <div key={n.id} onClick={() => navigate(`/perfiles-match-nutri/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <img src={n.profile_picture_url || nutricionista} alt="foto perfil nutricionista" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />
             <article>

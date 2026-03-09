@@ -6,6 +6,8 @@ import modalidad from "../assets/Modalidad.png";
 import disponibilidad from "../assets/Disponibilidad.png";
 import { Button } from "../components/common/Button";
 import AppLayout from "../components/layout/AppLayout";
+import { useNavigate } from "react-router-dom";
+
 
 // TODO: Replace with actual data from API
 //Datos hardcodeados para pruebas
@@ -34,13 +36,14 @@ const recomendados = [...pacientes] //hacemos spread para no mutar el array orig
   .sort((a, b) => b.compatibilidad - a.compatibilidad);
 
 const MatchPacienteList: React.FC = () => {
+  const navigate = useNavigate();
 
    return (
     <AppLayout>
         <p className="text-[1.25em] font-bold mb-4 ml-4">Información de pacientes</p>
 
-      {recomendados.map((p) => (
-        <div key={p.id} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
+      {recomendados.map((p: any) => (
+        <div key={p.id} onClick={() => navigate(`/perfiles-match-paciente/${p.id}`, { state: p })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <img src={p.foto} alt="foto perfil nutricionista" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />
             <article>

@@ -6,7 +6,7 @@ import nutricionistaDefault from "../assets/nutricionista.png";
 
 // TODO: Añadir los elementos reales del diseño, esta hecho solo de paso.
 
-const PerfilesMatch: React.FC = () => {
+const PerfilesMatchNutri: React.FC = () => {
   const { state: nutri } = useLocation();
   const navigate = useNavigate();
 
@@ -45,6 +45,24 @@ const PerfilesMatch: React.FC = () => {
           )}
         </section>
 
+        {nutri.match_reasons?.length > 0 && (
+          <section className="mx-6 mt-6">
+            <div className="bg-[#F0FBE8] border border-[#7ECD43] rounded-2xl p-4">
+              <h3 className="font-semibold text-base mb-3 text-[#2D2D2D]">
+                ¿Por qué hicieron match?
+              </h3>
+              <ul className="flex flex-col gap-2">
+                {nutri.match_reasons.map((reason: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                    <span className="text-[#7ECD43] font-bold mt-px">&#10003;</span>
+                    {reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
         <section className="flex flex-col gap-4 mx-6 mt-8">
           <Button className="w-full rounded-2xl">
             Agendar cita
@@ -62,4 +80,4 @@ const PerfilesMatch: React.FC = () => {
   );
 };
 
-export default PerfilesMatch;
+export default PerfilesMatchNutri;
