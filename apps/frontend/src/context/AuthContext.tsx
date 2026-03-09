@@ -2,6 +2,8 @@ import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { AuthState, User } from "../types";
 import { storage } from "../utils/storage";
 
+import { mockPatient, mockNutritionist } from "../mocks/mockUser"; // Mientras no está Login
+
 interface AuthContextType {
   authState: AuthState;
   login: (user: User) => void;
@@ -57,14 +59,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     error: null,
   });
 
+  //Descomentar cuando esté Login operativo
+
+  // useEffect(() => {
+  //   const savedUser = storage.getUser();
+  //   if (savedUser) {
+  //     dispatch({ type: "SET_USER", payload: savedUser });
+  //   } 
+  //   else {
+  //     dispatch({ type: "SET_LOADING", payload: false });
+  //   }
+  // }, []);
+
+  // Hasta aquí
+
+  // 🔵 SOLO EN DESARROLLO
   useEffect(() => {
-    const savedUser = storage.getUser();
-    if (savedUser) {
-      dispatch({ type: "SET_USER", payload: savedUser });
-    } else {
-      dispatch({ type: "SET_LOADING", payload: false });
-    }
-  }, []);
+  const savedUser = storage.getUser();
+
+  if (savedUser) {
+    dispatch({ type: "SET_USER", payload: savedUser });
+    return;
+  }
+
+  if (import.meta.env.DEV) {
+    const MOCK_ROLE: "patient" | "nutritionist" = "patient";
+    
+    const mockUser =
+    MOCK_ROLE === "patient"
+      ? mockPatient
+      : mockNutritionist;
+
+    storage.setUser(mockUser);
+    dispatch({ type: "SET_USER", payload: mockUser });
+    return;
+  }
+
+  dispatch({ type: "SET_LOADING", payload: false });
+}, []);
+// Hasta aquí
 
   const login = (user: User) => {
     storage.setUser(user);

@@ -1,52 +1,109 @@
 const userService = require('../services/userService');
 
 class AuthController {
+  /**
+   * Registro de nuevo usuario
+   * POST /api/v1/auth/register
+   * Body: { name, email, password, role? }
+   */
   async register(req, res) {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, role } = req.body;
 
+      // Validar campos requeridos
       if (!name || !email || !password) {
-        return res.status(400).json({ 
-          error: "All fields are required" 
+        return res.status(400).json({
+          success: false,
+          message: 'Los campos nombre, email y contraseña son requeridos',
         });
       }
 
-      const newUser = await userService.create({ name, email, password });
-      
-      res.status(201).json({
-        user: newUser.toJSON(),
-        message: "User registered successfully",
+      // Crear usuario en la BD
+      const user = await userService.createUser({
+        name,
+        email,
+        password,
+        role,
+      });
+
+      // Respuesta exitosa
+      return res.status(201).json({
+        success: true,
+        message: 'Usuario registrado exitosamente',
+        data: { user },
       });
     } catch (error) {
-      if (error.message === 'User already exists') {
-        return res.status(409).json({ error: error.message });
+      console.error('Error en registro:', error.message);
+
+      // Errores de validación (email duplicado, etc)
+      if (error.statusCode === 400) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+        });
       }
-      res.status(500).json({ error: "Registration failed" });
+
+      // Error de servidor
+      return res.status(500).json({
+        success: false,
+        message: 'Error al registrar el usuario',
+      });
     }
   }
 
+  /**
+   * Inicio de sesión de usuario
+   * POST /api/v1/auth/login
+   * Body: { email, password }
+   */
   async login(req, res) {
     try {
       const { email, password } = req.body;
 
+      // Validar campos requeridos
       if (!email || !password) {
-        return res.status(400).json({ 
-          error: "Email and password are required" 
+        return res.status(400).json({
+          success: false,
+          message: 'Email y contraseña son requeridos',
         });
       }
 
-      const user = await userService.authenticate(email, password);
-      
-      res.json({
-        user: user.toJSON(),
-        token: "mock-jwt-token-" + user.id,
-        message: "Login successful",
+      // Autenticar usuario y generar JWT
+      const { user, token } = await userService.loginUser(email, password);
+
+      // Respuesta exitosa
+      return res.status(200).json({
+        success: true,
+        message: 'Login exitoso',
+        data: {
+          user,
+          token,
+        },
       });
     } catch (error) {
-      if (error.message === 'Invalid email or password') {
-        return res.status(401).json({ error: error.message });
+      console.error('Error en login:', error.message);
+
+      // Errores de autenticación (credenciales inválidas)
+      if (error.statusCode === 401) {
+        return res.status(401).json({
+          success: false,
+          message: error.message,
+        });
       }
-      res.status(500).json({ error: "Login failed" });
+
+      // Cuenta desactivada (Soft Delete)
+      if (error.statusCode === 403) {
+        return res.status(403).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      // Error de servidor
+      return res.status(500).json({
+        success: false,
+        message: 'Error al iniciar sesión',
+      });
     }
   }
 }

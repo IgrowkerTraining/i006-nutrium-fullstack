@@ -1,157 +1,116 @@
-const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
 /**
- * Modelo Patient - Define la estructura de la tabla patients en PostgreSQL
- * 
- * Relacionado con la tabla users (relación 1:1)
- * Almacena información de perfil y salud del paciente
+ * Modelo Patient - Mapeado a la tabla `patient_profiles` de PostgreSQL.
+ *
+ * Esquema real (Nutriom.sql):
+ *   id            BIGSERIAL PRIMARY KEY
+ *   user_id       UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
+ *   birth_date    DATE NOT NULL
+ *   gender        VARCHAR(50)
+ *   health_goals  TEXT
+ *   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ *
+ * Los tags clínicos se gestionan a través de la tabla pivote
+ * `patient_tags` (patient_id BIGINT, tag_id INT) mediante la
+ * relación N:M definida en models/index.js.
  */
-class Patient extends Model {
-  /**
-   * Retorna objeto Patient sin campos sensibles
-   * @returns {Object} Paciente sin datos sensibles
-   */
-  toJSON() {
-    return this.dataValues;
-  }
-}
+class Patient extends Model {}
 
-// Opciones de enumeradores permitidos
-const MODALITIES = ['Virtual', 'Presencial', 'Mixto'];
-
-const AVAILABILITY = ['Mañana', 'Tarde'];
-
-const OBJECTIVES = [
-  'Pérdida de peso',
-  'Ganancia de masa muscular',
-  'Reeducación alimentaria',
-  'Mejorar salud digestiva',
-  'Mejorar composición corporal',
-  'Aumentar energía',
-  'Mejorar rendimiento deportivo',
-  'Organización de hábitos alimentarios',
-  'Alimentación para condición digestiva específica',
-  'Prevención y bienestar general',
-];
-
-const HEALTH_CONDITIONS = [
-  'SIBO',
-  'Disbiosis intestinal',
-  'Síndrome de intestino irritable (SII / IBS)',
-  'Intolerancia a la lactosa',
-  'Intolerancia al gluten',
-  'Sobrecrecimiento bacteriano colónico',
-  'Sobrecrecimiento de levaduras (Candida)',
-  'Parasitosis intestinal',
-  'Inflamación intestinal de bajo grado',
-  'Permeabilidad intestinal aumentada',
-  'Alteraciones post-antibióticos',
-  'Estreñimiento crónico funcional',
-  'Diarrea funcional crónica',
-  'Crecimiento bacteriano intestinal distal',
-  'Desequilibrio de la microbiota intestinal',
-  'Fermentación intestinal excesiva',
-];
-
-// Inicializar modelo con Sequelize
 Patient.init(
   {
-    // PRIMARY KEY: UUID v4
+    // PRIMARY KEY: BIGINT autoincremental generado por PostgreSQL (BIGSERIAL)
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
       primaryKey: true,
     },
 
-    // FOREIGN KEY: Referencia al usuario
-    userId: {
+    // FOREIGN KEY: Referencia al usuario autenticado
+    user_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'users',
-        key: 'id',
+        model: "users",
+        key: "id",
       },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
 
-    // ============ PERFIL (Profile) ============
-    nombreCompleto: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'full_name',
-    },
-
-    fechaNacimiento: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      field: 'date_of_birth',
-    },
-
-    pais: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'country',
-    },
-
-    ciudad: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: 'city',
-    },
-
-    // Modalidad: Virtual, Presencial, Mixto
-    modalidad: {
-      type: DataTypes.ENUM(...MODALITIES),
-      allowNull: true,
+    // Fecha de nacimiento del paciente
+    birth_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
       validate: {
-        isIn: {
-          args: [MODALITIES],
-          msg: `Modalidad debe ser uno de: ${MODALITIES.join(', ')}`,
+        notNull: { msg: "birth_date es obligatorio" },
+        isDate: { msg: "birth_date debe ser una fecha válida (YYYY-MM-DD)" },
+        // Última línea de defensa en el ORM: garantiza el formato estricto
+        // incluso si el dato llegó sin pasar por el controlador.
+        is: {
+          args: /^\d{4}-\d{2}-\d{2}$/,
+          msg: "birth_date debe seguir el formato exacto YYYY-MM-DD",
         },
       },
     },
 
-    // Disponibilidad: Mañana, Tarde
-    disponibilidad: {
-      type: DataTypes.ENUM(...AVAILABILITY),
-      allowNull: true,
+    // Género del paciente
+    gender: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
       validate: {
-        isIn: {
-          args: [AVAILABILITY],
-          msg: `Disponibilidad debe ser uno de: ${AVAILABILITY.join(', ')}`,
-        },
+        notNull: { msg: "gender es obligatorio" },
+        notEmpty: { msg: "gender no puede estar vacío" },
       },
     },
 
-    // Objetivo: Pérdida de peso, Ganancia de masa muscular, etc.
-    objetivo: {
-      type: DataTypes.ENUM(...OBJECTIVES),
+    // Objetivos de salud (texto libre)
+    health_goals: {
+      type: DataTypes.TEXT,
       allowNull: true,
-      validate: {
-        isIn: {
-          args: [OBJECTIVES],
-          msg: `Objetivo debe ser uno de: ${OBJECTIVES.join(', ')}`,
-        },
-      },
     },
 
-    // ============ SALUD/TAGS (Health Tags) ============
-    // Array de condiciones de salud (almacenado como JSON en PostgreSQL)
-    condiciones: {
+    // Idiomas que habla el paciente (array de strings, al menos uno requerido)
+    languages: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true,
+      allowNull: false,
       defaultValue: [],
       validate: {
-        isValidConditions(value) {
-          if (Array.isArray(value)) {
-            const invalidConditions = value.filter(
-              (condition) => !HEALTH_CONDITIONS.includes(condition)
-            );
-            if (invalidConditions.length > 0) {
+        notNull: { msg: "languages es obligatorio" },
+        isNotEmptyArray(value) {
+          if (!Array.isArray(value) || value.length === 0) {
+            throw new Error("languages debe contener al menos un idioma");
+          }
+        },
+      },
+    },
+
+    // Modalidad de atención preferida
+    modality: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      validate: {
+        notNull: { msg: "modality es obligatoria" },
+        notEmpty: { msg: "modality no puede estar vacía" },
+        isIn: {
+          args: [["online", "presencial", "hibrido"]],
+          msg: "modality debe ser: online, presencial o hibrido",
+        },
+      },
+    },
+
+    // URL de la foto de perfil (opcional, pero si se envía debe ser URL válida)
+    profile_picture: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      validate: {
+        isUrlIfPresent(value) {
+          if (value !== null && value !== undefined && value !== "") {
+            const urlPattern = /^https?:\/\/.+/i;
+            if (!urlPattern.test(value)) {
               throw new Error(
-                `Condiciones inválidas: ${invalidConditions.join(', ')}. Permitidas: ${HEALTH_CONDITIONS.join(', ')}`
+                "profile_picture debe ser una URL válida (http/https)",
               );
             }
           }
@@ -159,38 +118,34 @@ Patient.init(
       },
     },
 
-    // Otra condición / Observaciones (texto libre)
-    otraCondicion: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      field: 'other_condition',
+    // País del paciente
+    country: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      validate: {
+        notNull: { msg: "country es obligatorio" },
+        notEmpty: { msg: "country no puede estar vacío" },
+      },
     },
 
-    // ============ TIMESTAMPS ============
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'created_at',
-    },
-
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      onUpdate: DataTypes.NOW,
-      field: 'updated_at',
+    // Ciudad del paciente
+    city: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      validate: {
+        notNull: { msg: "city es obligatoria" },
+        notEmpty: { msg: "city no puede estar vacía" },
+      },
     },
   },
   {
     sequelize,
-    modelName: 'Patient',
-    tableName: 'patients',
+    modelName: "Patient",
+    tableName: "patient_profiles",
     timestamps: true,
+    updatedAt: false, // patient_profiles no tiene columna updated_at
     underscored: true,
-  }
+  },
 );
 
 module.exports = Patient;
-module.exports.MODALITIES = MODALITIES;
-module.exports.AVAILABILITY = AVAILABILITY;
-module.exports.OBJECTIVES = OBJECTIVES;
-module.exports.HEALTH_CONDITIONS = HEALTH_CONDITIONS;

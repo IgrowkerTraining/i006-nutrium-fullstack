@@ -21,7 +21,7 @@ const TerminosYCondiciones: React.FC = () => {
       navigate("/landing-acceso", { replace: true });
       return;
     }
-    navigate("/login");
+    navigate("/register", { replace: true });
   };  
   const estiloTitulo = "font-bold text-[1.5em] mb-2";
   const estiloP = "mb-6 text-[1.25em]";

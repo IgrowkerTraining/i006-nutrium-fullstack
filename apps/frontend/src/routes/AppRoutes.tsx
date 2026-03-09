@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import { useAuth } from "../hooks/useAuth";
 
 import LandingAcceso from "../pages/LandingAcceso";
 import TerminosYCondiciones from "../pages/TerminosYCondiciones";
@@ -22,15 +23,43 @@ import AppLayout from "../components/layout/AppLayout";
 import Dashboard from "../pages/Dashboard";
 import CuestionarioPersonal from "../pages/CuestionarioPersonal";
 import CuestionarioSalud from "../pages/CuestionarioSalud";
-import Match from "../pages/Match";
+import MatchPaciente from "../pages/MatchPaciente";
+import MatchNutricionista from "../pages/MatchNutricionista";
 import Perfil from "../pages/Perfil";
 import Calendario from "../pages/Calendario";
 import RecuperarPassword from "../pages/RecuperarPassword";
+import HomePage from "../pages/HomePage";
+import MatchNutriList from "../pages/MatchNutriList";
+import MatchPacienteList from "../pages/MatchPacienteList";
+
+
+const MatchIndexRedirect: React.FC = () => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return user.role === "nutritionist" ? (
+    <Navigate to="/match/paciente-list" replace />
+  ) : (
+    <Navigate to="/match/nutri-list" replace />
+  );
+};
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* públicas */}
+      {/* Rutas públicas */}
+      <Route path="/" element={<Navigate to="/landing-acceso" replace />} />
+      <Route 
+      path="/home-page" 
+      element={
+        <PublicRoute>
+          <HomePage />
+        </PublicRoute>
+      } 
+      />
       <Route path="/landing-acceso" element={<LandingAcceso />} />
       <Route path="/terminos-y-condiciones" element={<TerminosYCondiciones />} />
 
@@ -126,6 +155,10 @@ export const AppRoutes: React.FC = () => {
       />
 
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
+      <Route path="/landing-acceso" element={<LandingAcceso />} />
+      <Route path="/match-paciente" element={<MatchPaciente />} />
+      <Route path="/match-nutricionista" element={<MatchNutricionista />} />
+
 
       {/* privadas */}
       <Route
@@ -136,16 +169,17 @@ export const AppRoutes: React.FC = () => {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/cuestionario-personal" element={<CuestionarioPersonal />} />
-        <Route path="/cuestionario-salud" element={<CuestionarioSalud />} />
-        <Route path="/match" element={<Match />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/calendario" element={<Calendario />} />
+        <Route path="/match" element={<MatchIndexRedirect />} />
+        <Route path="/match/nutri-list" element={<MatchNutriList />} />
+        <Route path="/match/paciente-list" element={<MatchPacienteList />} />
+        <Route path="/cuestionario-personal" element={<CuestionarioPersonal />} />
+        <Route path="/cuestionario-salud" element={<CuestionarioSalud />} />
       </Route>
 
-      {/* default */}
-      <Route path="/" element={<Navigate to="/landing-acceso" replace />} />
       <Route path="*" element={<Navigate to="/landing-acceso" replace />} />
+
     </Routes>
   );
 };
