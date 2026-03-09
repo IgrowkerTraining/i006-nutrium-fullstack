@@ -18,7 +18,8 @@ type FormState = {
   password: string;
   confirmPassword: string;
   modalidad: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
   objetivo: string;
 };
 
@@ -36,7 +37,8 @@ const RegisterPatientPersonal: React.FC = () => {
     password: "",
     confirmPassword: "",
     modalidad: "",
-    disponibilidad: "",
+    horarioDesde: "",
+    horarioHasta: "",
     objetivo: "",
   });
 
@@ -76,7 +78,8 @@ const RegisterPatientPersonal: React.FC = () => {
         city: form.city,
         email: form.email,
         modalidad: form.modalidad,
-        disponibilidad: form.disponibilidad,
+        horarioDesde: form.horarioDesde,
+        horarioHasta: form.horarioHasta,
         objetivo: form.objetivo,
       })
     );
@@ -87,7 +90,8 @@ const RegisterPatientPersonal: React.FC = () => {
     form.city,
     form.email,
     form.modalidad,
-    form.disponibilidad,
+    form.horarioDesde,
+    form.horarioHasta,
     form.objetivo,
   ]);
 
@@ -110,7 +114,11 @@ const RegisterPatientPersonal: React.FC = () => {
     if (form.password !== form.confirmPassword)
       return setError("Las contraseñas no coinciden.");
     if (!form.modalidad) return setError("Selecciona una modalidad.");
-    if (!form.disponibilidad) return setError("Selecciona una disponibilidad.");
+    if (!form.horarioDesde) return setError("Selecciona el horario de inicio.");
+    if (!form.horarioHasta) return setError("Selecciona el horario de fin.");
+    if (form.horarioDesde >= form.horarioHasta) {
+      return setError("El horario de fin debe ser posterior al de inicio.");
+    }
     if (!form.objetivo.trim()) return setError("Introduce tu objetivo.");
 
     setIsLoading(true);
@@ -125,7 +133,8 @@ const RegisterPatientPersonal: React.FC = () => {
           city: form.city,
           email: form.email,
           modalidad: form.modalidad,
-          disponibilidad: form.disponibilidad,
+          horarioDesde: form.horarioDesde,
+          horarioHasta: form.horarioHasta,
           objetivo: form.objetivo,
         })
       );
@@ -152,12 +161,20 @@ const RegisterPatientPersonal: React.FC = () => {
     { value: "mixto", label: "Mixto" },
   ];
 
-  const disponibilidadOptions = [
-    { value: "", label: "Mañana / Tarde" },
-    { value: "manana", label: "Mañana" },
-    { value: "tarde", label: "Tarde" },
-    { value: "flexible", label: "Flexible" },
-  ];
+  const horarioOptions = [
+  { value: "", label: "Hora" },
+  { value: "08:00", label: "08:00" },
+  { value: "09:00", label: "09:00" },
+  { value: "10:00", label: "10:00" },
+  { value: "11:00", label: "11:00" },
+  { value: "12:00", label: "12:00" },
+  { value: "13:00", label: "13:00" },
+  { value: "14:00", label: "14:00" },
+  { value: "15:00", label: "15:00" },
+  { value: "16:00", label: "16:00" },
+  { value: "17:00", label: "17:00" },
+  { value: "18:00", label: "18:00" },
+];
 
   return (
     <AuthLayout>
@@ -197,9 +214,46 @@ const RegisterPatientPersonal: React.FC = () => {
           onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
         />
 
-        <Select label="Modalidad*" value={form.modalidad} onChange={(e) => setForm((p) => ({ ...p, modalidad: e.target.value }))} options={modalidadOptions} />
-        <Select label="Disponibilidad*" value={form.disponibilidad} onChange={(e) => setForm((p) => ({ ...p, disponibilidad: e.target.value }))} options={disponibilidadOptions} />
-        <Input label="Objetivo*" name="objetivo" required value={form.objetivo} onChange={handleChange} />
+        <Select
+          label="Modalidad*"
+          value={form.modalidad}
+          onChange={(e) => setForm((p) => ({ ...p, modalidad: e.target.value }))}
+          options={modalidadOptions}
+        />
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-700 mb-2">
+            Disponibilidad horaria*
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Desde"
+              value={form.horarioDesde}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, horarioDesde: e.target.value }))
+              }
+              options={horarioOptions}
+            />
+
+            <Select
+              label="Hasta"
+              value={form.horarioHasta}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, horarioHasta: e.target.value }))
+              }
+              options={horarioOptions}
+            />
+          </div>
+        </div>
+
+        <Input
+          label="Objetivo*"
+          name="objetivo"
+          required
+          value={form.objetivo}
+          onChange={handleChange}
+        />
 
         <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
           Continuar
