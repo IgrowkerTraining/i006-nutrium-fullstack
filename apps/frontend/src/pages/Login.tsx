@@ -25,7 +25,49 @@ const Login: React.FC = () => {
     try {
       const response = await api.login({ email, password });
       storage.setToken(response.token);
-      login(response.user);
+
+      let userData: any = { ...response.user, fullName: (response.user as any).name || response.user.fullName };
+
+      // Traer el perfil completo según el rol
+      try {
+        if (response.user.role === "patient") {
+          const profileRes = await api.getPatientProfile(response.token);
+          const p = profileRes?.data?.profile;
+          if (p) {
+            userData = {
+              ...userData,
+              birthDate: p.birth_date || "",
+              country: p.country || "",
+              city: p.city || "",
+              modality: p.modality || "",
+              availability: p.availability || "Mañana",
+              goal: p.health_goals || "",
+              medicalCondition: "",
+              otherConditionDescription: "",
+            };
+          }
+        } else if (response.user.role === "nutritionist") {
+          const profileRes = await api.getNutritionistProfile(response.token);
+          const p = profileRes?.data?.profile;
+          if (p) {
+            userData = {
+              ...userData,
+              licenseNumber: p.license_number || "",
+              modality: p.modality || "",
+              availability: p.availabilities?.[0] || "Mañana",
+              education: p.bio || "",
+              specialization: p.tags?.map((t: any) => t.name).join(", ") || "",
+              country: p.country || "",
+              city: p.city || "",
+              qualifyingDegree: "",
+            };
+          }
+        }
+      } catch (profileErr) {
+        console.warn("[Login] Failed to fetch profile:", profileErr);
+      }
+
+      login(userData);
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");

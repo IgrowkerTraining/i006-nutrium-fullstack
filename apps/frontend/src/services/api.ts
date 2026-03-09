@@ -326,6 +326,39 @@ export const api = {
     return result;
   },
 
+  async getNutritionistProfile(token: string): Promise<any> {
+    if (useMocks) {
+      return {
+        success: true,
+        message: "Mock nutritionist profile",
+        data: {
+          profile: {
+            license_number: mockNutritionist.licenseNumber,
+            modality: mockNutritionist.modality,
+            specializations: [],
+            country: mockNutritionist.country,
+            city: mockNutritionist.city,
+          },
+        },
+      };
+    }
+
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.NUTRITIONISTS}/profile`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al obtener el perfil del nutricionista");
+    }
+    return result;
+  },
+
   async getPatientProfile(token: string): Promise<any> {
     if (useMocks) {
       return {
