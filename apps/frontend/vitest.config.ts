@@ -7,5 +7,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: "./src/test/setup.ts",
+    alias: {
+      "\\.(png|jpg|jpeg|gif|svg)$": "./src/test/fileMock.ts",
+    },
   },
 });
