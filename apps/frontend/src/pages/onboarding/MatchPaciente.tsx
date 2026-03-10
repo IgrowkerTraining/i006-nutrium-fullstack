@@ -4,17 +4,36 @@ import { AuthLayout } from "../../components/layout/AuthLayout";
 import logo from "../../assets/nutrium-logo.svg";
 import animation from "../../assets/NUTRIUM-Animacion.gif"
 import { storage } from "../../utils/storage";
+import { api } from "../../services/api";
 
 const Match: React.FC = () => {
   const navigate = useNavigate();
   const token = storage.getToken();
-  const hasRealSession = Boolean(token && token !== "mock-token");
+  const user = storage.getUser();
+  const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/match/nutri-list");
-    }, 3000);
-    return () => clearTimeout(timer);
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 3000));
+
+    if (hasRealSession && token && user?.id) {
+      const fetchMatches = api.getPatientRecommendations(token, user.id);
+
+      Promise.all([minDelay, fetchMatches])
+        .then(([, matches]) => {
+          navigate("/match/nutri-list", { state: { matches } });
+        })
+        .catch(async (err) => {
+          console.warn("[MatchPaciente] IA no disponible, cargando nutricionistas del backend:", err.message);
+          try {
+            const nutritionists = await api.getNutritionists();
+            navigate("/match/nutri-list", { state: { fallbackNutritionists: nutritionists } });
+          } catch {
+            navigate("/match/nutri-list");
+          }
+        });
+    } else {
+      minDelay.then(() => navigate("/match/nutri-list"));
+    }
   }, [navigate]);
 
   return (

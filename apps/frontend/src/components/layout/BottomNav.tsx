@@ -5,8 +5,8 @@ export const BottomNav: React.FC = () => {
   const base = "flex flex-col items-center";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-3">
-      <ul className="flex justify-between items-center text-xs">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-3 z-50">
+      <ul className="flex justify-between items-center text-xs w-full">
 
         <li>
           <NavLink

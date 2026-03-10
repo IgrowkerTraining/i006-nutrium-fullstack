@@ -16,6 +16,8 @@ export const ROUTES = {
   LANDING_ACCESO: '/landing-acceso',
   TERMINOS_Y_CONDICIONES: '/terminos-y-condiciones',
   HOME_PAGE: '/home-page',
+  PERFILES_MATCH_NUTRICIONISTA: '/perfiles-match-nutri',
+  PERFILES_MATCH_PACIENTE: '/perfiles-match-paciente',
 } as const;
 
 export const API_ENDPOINTS = {
@@ -29,6 +31,12 @@ export const API_ENDPOINTS = {
     PROFILE: '/patients/profile',
   },
   NUTRITIONISTS: '/nutritionists',
+  APPOINTMENTS: {
+    BASE: '/appointments',
+    MY_CALENDAR: '/appointments/my-calendar',
+    CONFIRM: (id: string) => `/appointments/${id}/confirm`,
+    CANCEL: (id: string) => `/appointments/${id}/cancel`,
+  },
 } as const;
 
 export const STORAGE_KEYS = {
