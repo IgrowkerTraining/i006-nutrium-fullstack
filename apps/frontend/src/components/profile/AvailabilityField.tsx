@@ -20,7 +20,7 @@ export const AvailabilityField: React.FC<AvailabilityFieldProps> = ({ label, val
             type="time"
             value={start}
             readOnly
-            className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-medium"
+            className="px-3 py-2 rounded-xl bg-50 text-gray-700 font-medium"
           />
         </div>
 
@@ -30,7 +30,7 @@ export const AvailabilityField: React.FC<AvailabilityFieldProps> = ({ label, val
             type="time"
             value={end}
             readOnly
-            className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-medium"
+            className="px-3 py-2 rounded-xl bg-50 text-gray-700 font-medium"
           />
         </div>
       </div>
