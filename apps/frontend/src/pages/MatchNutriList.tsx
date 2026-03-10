@@ -46,9 +46,17 @@ const MatchNutriList: React.FC = () => {
   const [nutricionistas, setNutricionistas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<string | null>(null); // nutritionist_id o null
+  const [aptDate, setAptDate] = useState("");
+  const [aptStart, setAptStart] = useState("09:00");
+  const [aptEnd, setAptEnd] = useState("10:00");
+  const [aptNotes, setAptNotes] = useState("");
+  const [aptLoading, setAptLoading] = useState(false);
+  const [aptMsg, setAptMsg] = useState<string | null>(null);
   const token = storage.getToken();
   const user = storage.getUser();
   const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
+  // Prioridad: datos reales (IA o backend) → mocks como último recurso
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,8 +73,17 @@ const MatchNutriList: React.FC = () => {
       compatibility: m.compatibility_score ?? 0,
     }));
 
+  // Fallback al backend: carga nutricionistas reales sin compatibilidad IA
+  const fetchBackendFallback = async () => {
+    const nutritionists = await api.getNutritionists();
+    if (nutritionists.length > 0) {
+      setNutricionistas(nutritionists);
+      sessionStorage.setItem("nutrium_matches", JSON.stringify(nutritionists));
+    }
+  };
+
   useEffect(() => {
-    // 1. Si la pantalla de carga ya trajo los matches, usarlos y guardar en cache
+    // 1. Si la pantalla de carga trajo matches de IA, usarlos
     const stateMatches = (location.state as any)?.matches;
     if (stateMatches && stateMatches.length > 0) {
       const mapped = mapMatches(stateMatches);
@@ -75,7 +92,15 @@ const MatchNutriList: React.FC = () => {
       return;
     }
 
-    // 2. Si hay matches cacheados (volviendo de un perfil), usarlos
+    // 2. Si la pantalla de carga trajo nutricionistas del backend (fallback sin IA)
+    const fallbackNutris = (location.state as any)?.fallbackNutritionists;
+    if (fallbackNutris && fallbackNutris.length > 0) {
+      setNutricionistas(fallbackNutris);
+      sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
+      return;
+    }
+
+    // 3. Si hay datos cacheados (volviendo de un perfil), usarlos
     const cached = sessionStorage.getItem("nutrium_matches");
     if (cached) {
       try {
@@ -84,7 +109,7 @@ const MatchNutriList: React.FC = () => {
       } catch { /* ignorar cache corrupto */ }
     }
 
-    // 3. Fallback: si se accede directo a esta URL, llamar a la API
+    // 4. Acceso directo a esta URL: IA → Backend → Mocks
     if (!hasRealSession || !token || !user?.id) {
       setLoading(false);
       return;
@@ -98,14 +123,44 @@ const MatchNutriList: React.FC = () => {
           sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
         }
       })
-      .catch((err) => {
-        console.warn("[MatchNutriList] IA no disponible, usando mocks:", err.message);
+      .catch(async (err) => {
+        console.warn("[MatchNutriList] IA no disponible, intentando backend:", err.message);
+        try {
+          await fetchBackendFallback();
+        } catch (backendErr) {
+          console.warn("[MatchNutriList] Backend no disponible, usando mocks");
+        }
       })
       .finally(() => setLoading(false));
   }, []);
   
-  /* const recomendados = [...nutricionistas] //hacemos spread para no mutar el array original
-    .sort((a, b) => b.compatibilidad - a.compatibilidad); */
+  const handleCreateAppointment = async () => {
+    if (!token || !showModal || !aptDate) return;
+    setAptLoading(true);
+    setAptMsg(null);
+    try {
+      await api.createAppointment(token, {
+        nutritionist_id: showModal,
+        appointment_date: aptDate,
+        start_time: aptStart,
+        end_time: aptEnd,
+        notes: aptNotes || undefined,
+      });
+      setAptMsg("Cita agendada exitosamente");
+      setTimeout(() => {
+        setShowModal(null);
+        setAptMsg(null);
+        setAptDate("");
+        setAptStart("09:00");
+        setAptEnd("10:00");
+        setAptNotes("");
+      }, 1500);
+    } catch (err: any) {
+      setAptMsg(err.message || "Error al agendar la cita");
+    } finally {
+      setAptLoading(false);
+    }
+  };
 
   return (
     <AppLayout>
@@ -158,9 +213,54 @@ const MatchNutriList: React.FC = () => {
               </article>
             </div>
           </div>
-            <Button onClick={(e) => e.stopPropagation()} className="w-[90%] mx-auto mb-4">Agendar cita</Button>
+            <Button onClick={(e) => { e.stopPropagation(); setShowModal(n.user_id || n.user?.id || n.id); }} className="w-[90%] mx-auto mb-4">Agendar cita</Button>
         </div>
       ))}
+
+      {/* Modal Agendar Cita */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowModal(null)}>
+          <div className="bg-white rounded-2xl p-6 mx-4 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Agendar cita</h3>
+
+            <label className="block text-sm font-medium mb-1">Fecha</label>
+            <input type="date" value={aptDate} onChange={(e) => setAptDate(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+              className="w-full border rounded-lg px-3 py-2 mb-3" />
+
+            <div className="flex gap-3 mb-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Inicio</label>
+                <input type="time" value={aptStart} onChange={(e) => setAptStart(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">Fin</label>
+                <input type="time" value={aptEnd} onChange={(e) => setAptEnd(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2" />
+              </div>
+            </div>
+
+            <label className="block text-sm font-medium mb-1">Notas (opcional)</label>
+            <input type="text" value={aptNotes} onChange={(e) => setAptNotes(e.target.value)}
+              placeholder="Ej: Virtual, Presencial..."
+              className="w-full border rounded-lg px-3 py-2 mb-4" />
+
+            {aptMsg && (
+              <p className={`text-sm mb-3 ${aptMsg.includes("exitosamente") ? "text-green-600" : "text-red-500"}`}>
+                {aptMsg}
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <Button onClick={() => setShowModal(null)} className="flex-1 bg-gray-200 text-gray-700">Cancelar</Button>
+              <Button onClick={handleCreateAppointment} disabled={!aptDate || aptLoading} className="flex-1">
+                {aptLoading ? "Agendando..." : "Confirmar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 };

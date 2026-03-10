@@ -71,14 +71,15 @@ const Perfil: React.FC = () => {
       });
   }, [user, profileLoaded]);
 
-  if (!user) return null;
+  if (!user) return <div style={{color:'red',fontSize:24}}>SIN USUARIO</div>;
 
   return (
-    <ProfilePage
-      profile={user}
+      <ProfilePage
+        profile={user}
       onEdit={() => console.log("Editar")}
-      onLogout={logout}
-    />
+
+        onLogout={logout}
+      />
   );
 };
 

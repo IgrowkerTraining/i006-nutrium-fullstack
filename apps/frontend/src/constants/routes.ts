@@ -32,6 +32,7 @@ export const API_ENDPOINTS = {
   },
   NUTRITIONISTS: '/nutritionists',
   APPOINTMENTS: {
+    BASE: '/appointments',
     MY_CALENDAR: '/appointments/my-calendar',
     CONFIRM: (id: string) => `/appointments/${id}/confirm`,
     CANCEL: (id: string) => `/appointments/${id}/cancel`,

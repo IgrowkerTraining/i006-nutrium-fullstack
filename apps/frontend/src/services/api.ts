@@ -99,9 +99,9 @@ export const api = {
       );
     }
 
-    return {
-      user: result?.data?.user,
-      token: result?.data?.token,
+      return {
+      user: result?.data?.user || result?.user,
+      token: result?.data?.token || result?.token, 
       message: result?.message,
     };
   },
@@ -359,6 +359,32 @@ export const api = {
     return result;
   },
 
+  async createAppointment(token: string, data: {
+    nutritionist_id: string;
+    appointment_date: string;
+    start_time: string;
+    end_time: string;
+    notes?: string;
+  }): Promise<any> {
+    if (useMocks) {
+      return { success: true, message: "Mock appointment created", data: { appointment: { id: "mock-apt-1", ...data } } };
+    }
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.APPOINTMENTS.BASE}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al agendar la cita");
+    }
+    return result;
+  },
+
   async getPatientProfile(token: string): Promise<any> {
     if (useMocks) {
       return {
@@ -390,6 +416,26 @@ export const api = {
     const result = await readJsonSafely(response);
     if (!response.ok) {
       throw new Error(result?.message || "Error al obtener el perfil del paciente");
+    }
+    return result;
+  },
+
+  async setAvailability(token: string, slots: { day_of_week: number; start_time: string; end_time: string }[]): Promise<any> {
+    if (useMocks) {
+      return { success: true, message: "Mock availability set" };
+    }
+    const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.NUTRITIONISTS}/availability`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ slots }),
+    });
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error(result?.message || "Error al guardar la disponibilidad");
     }
     return result;
   },

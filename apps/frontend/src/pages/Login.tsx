@@ -24,6 +24,10 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.login({ email, password });
+       console.log("🔴 response completo:", response);
+       console.log("🔴 token:", response.token);                        
+       storage.setToken(response.token);
+       console.log("🔴 token guardado:", localStorage.getItem('nutrium_token'));
       storage.setToken(response.token);
 
       let userData: any = { ...response.user, fullName: (response.user as any).name || response.user.fullName };
@@ -48,7 +52,9 @@ const Login: React.FC = () => {
           }
         } else if (response.user.role === "nutritionist") {
           const profileRes = await api.getNutritionistProfile(response.token);
+           console.log("🟡 nutritionist profileRes:", profileRes)
           const p = profileRes?.data?.profile;
+          console.log("🟡 p:", p);
           if (p) {
             userData = {
               ...userData,
@@ -70,6 +76,7 @@ const Login: React.FC = () => {
       login(userData);
       navigate("/dashboard");
     } catch (err: any) {
+       console.error("❌ Error en login:", err);
       setError(err.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);

@@ -22,9 +22,14 @@ const Match: React.FC = () => {
         .then(([, matches]) => {
           navigate("/match/nutri-list", { state: { matches } });
         })
-        .catch((err) => {
-          console.warn("[MatchPaciente] IA no disponible, usando mocks:", err.message);
-          navigate("/match/nutri-list", { state: { matches: null } });
+        .catch(async (err) => {
+          console.warn("[MatchPaciente] IA no disponible, cargando nutricionistas del backend:", err.message);
+          try {
+            const nutritionists = await api.getNutritionists();
+            navigate("/match/nutri-list", { state: { fallbackNutritionists: nutritionists } });
+          } catch {
+            navigate("/match/nutri-list");
+          }
         });
     } else {
       minDelay.then(() => navigate("/match/nutri-list"));

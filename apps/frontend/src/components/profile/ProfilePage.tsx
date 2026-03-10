@@ -15,9 +15,9 @@ export const ProfilePage: React.FC<Props> = ({
   onLogout,
 }) => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-screen">
 
-      <main className="flex-1 pb-24">
+      <main className="flex-1 pb-24 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden">
         <section className="px-6">
           <h2 className="text-xl font-semibold text-left">
             Tu Perfil
