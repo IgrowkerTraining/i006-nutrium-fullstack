@@ -29,7 +29,7 @@ const PerfilesMatchNutri: React.FC = () => {
         <section className="flex justify-center mx-6 my-[clamp(43px,10.94vw,80px)]">
           <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center">
             <span className="text-6xl text-slate-400">
-              {(paciente.name)?.charAt(0)?.toUpperCase() || "?"}
+              {(nutri.user?.name)?.charAt(0)?.toUpperCase() || "?"}
             </span>
           </div>
         </section>
@@ -51,14 +51,6 @@ const PerfilesMatchNutri: React.FC = () => {
               <h3 className="font-semibold text-base mb-3 text-[#2D2D2D]">
                 ¿Por qué hicieron match?
               </h3>
-              <ul className="flex flex-col gap-2">
-                {nutri.match_reasons.map((reason: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-[#4B5563]">
-                    <span className="text-[#7ECD43] font-bold mt-px">&#10003;</span>
-                    {reason}
-                  </li>
-                ))}
-              </ul>
             </div>
           </section>
         )}
