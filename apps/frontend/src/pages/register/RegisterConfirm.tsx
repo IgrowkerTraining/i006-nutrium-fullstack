@@ -12,7 +12,8 @@ type NutritionistPersonal = {
   modalidad: string;
   formacion: string;
   especializacion: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
 };
 
 type NutritionistProfessional = {
@@ -31,7 +32,8 @@ type PatientPersonal = {
   city: string;
   email: string;
   modalidad: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
   objetivo: string;
 };
 
@@ -67,14 +69,17 @@ const RegisterConfirm: React.FC = () => {
     () => safeParse<NutritionistPersonal>("nutrium_register_nutritionist_personal"),
     []
   );
+
   const nutriProfessional = useMemo(
     () => safeParse<NutritionistProfessional>("nutrium_register_nutritionist_professional"),
     []
   );
+
   const patientPersonal = useMemo(
     () => safeParse<PatientPersonal>("nutrium_register_patient_personal"),
     []
   );
+
   const patientHealth = useMemo(
     () => safeParse<PatientHealth>("nutrium_register_patient_health"),
     []
@@ -239,7 +244,9 @@ const RegisterConfirm: React.FC = () => {
 
         <div className="text-center">
           <h2 className="text-xl font-semibold">Confirmación de datos</h2>
-          <p className="text-sm text-slate-500 mt-1">Revisa tus datos antes de continuar.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Revisa tus datos antes de continuar.
+          </p>
         </div>
       </div>
 
@@ -248,7 +255,9 @@ const RegisterConfirm: React.FC = () => {
           <>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Personal</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Personal
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/nutritionist/personal")}
@@ -263,15 +272,22 @@ const RegisterConfirm: React.FC = () => {
               <ReadOnlyField label="Modalidad" value={displayLabel("modalidad", nutriPersonal.modalidad)} />
               <ReadOnlyField label="Formación" value={nutriPersonal.formacion} />
               <ReadOnlyField label="Especialización" value={nutriPersonal.especializacion} />
-              <ReadOnlyField label="Disponibilidad" value={displayLabel("disponibilidad", nutriPersonal.disponibilidad)} />
+              <ReadOnlyField
+                label="Disponibilidad horaria"
+                value={`${nutriPersonal.horarioDesde} - ${nutriPersonal.horarioHasta}`}
+              />
             </section>
 
             <section className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Profesional</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Profesional
+                </h3>
                 <button
                   type="button"
-                  onClick={() => navigate("/register/nutritionist/professional")}
+                  onClick={() =>
+                    navigate("/register/nutritionist/professional")
+                  }
                   className="text-sm text-[#7ECD43] font-medium hover:underline"
                 >
                   Editar
@@ -293,7 +309,9 @@ const RegisterConfirm: React.FC = () => {
           <>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Personal</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Personal
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/patient/personal")}
@@ -308,14 +326,19 @@ const RegisterConfirm: React.FC = () => {
               <ReadOnlyField label="País" value={displayLabel("country", patientPersonal.country)} />
               <ReadOnlyField label="Ciudad" value={patientPersonal.city} />
               <ReadOnlyField label="Correo electrónico" value={patientPersonal.email} />
-              <ReadOnlyField label="Modalidad" value={displayLabel("modalidad", patientPersonal.modalidad)} />
-              <ReadOnlyField label="Disponibilidad" value={displayLabel("disponibilidad", patientPersonal.disponibilidad)} />
+              <ReadOnlyField label="Modalidad" value={patientPersonal.modalidad} />
+              <ReadOnlyField
+                label="Disponibilidad horaria"
+                value={`${patientPersonal.horarioDesde} - ${patientPersonal.horarioHasta}`}
+              />
               <ReadOnlyField label="Objetivo" value={patientPersonal.objetivo} />
             </section>
 
             <section className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario de Salud</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario de Salud
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/patient/health")}
@@ -325,9 +348,16 @@ const RegisterConfirm: React.FC = () => {
                 </button>
               </div>
 
-              <ReadOnlyField label="¿Padeces alguna condición?" value={patientHealth.condition} />
+              <ReadOnlyField
+                label="¿Padeces alguna condición?"
+                value={patientHealth.condition}
+              />
+
               {patientHealth.condition === "otra" && (
-                <ReadOnlyField label="Descripción" value={patientHealth.conditionDetails} />
+                <ReadOnlyField
+                  label="Descripción"
+                  value={patientHealth.conditionDetails}
+                />
               )}
             </section>
           </>

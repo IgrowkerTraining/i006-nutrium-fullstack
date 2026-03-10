@@ -18,7 +18,8 @@ type FormState = {
   modalidad: string;
   formacion: string;
   especializacion: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
 };
 
 const STORAGE_KEY = "nutrium_register_nutritionist_personal";
@@ -34,13 +35,13 @@ const RegisterNutritionistPersonal: React.FC = () => {
     modalidad: "",
     formacion: "",
     especializacion: "",
-    disponibilidad: "",
+    horarioDesde: "",
+    horarioHasta: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Guard de rol
   useEffect(() => {
     const role = localStorage.getItem("nutrium_role");
     if (role !== "nutritionist") {
@@ -48,7 +49,6 @@ const RegisterNutritionistPersonal: React.FC = () => {
     }
   }, [navigate]);
 
-  // Prefill desde localStorage (SIN password)
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return;
@@ -63,7 +63,6 @@ const RegisterNutritionistPersonal: React.FC = () => {
     } catch {}
   }, []);
 
-  // Autosave (SIN password)
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -73,7 +72,8 @@ const RegisterNutritionistPersonal: React.FC = () => {
         modalidad: form.modalidad,
         formacion: form.formacion,
         especializacion: form.especializacion,
-        disponibilidad: form.disponibilidad,
+        horarioDesde: form.horarioDesde,
+        horarioHasta: form.horarioHasta,
       })
     );
   }, [
@@ -82,7 +82,8 @@ const RegisterNutritionistPersonal: React.FC = () => {
     form.modalidad,
     form.formacion,
     form.especializacion,
-    form.disponibilidad,
+    form.horarioDesde,
+    form.horarioHasta,
   ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,12 +104,12 @@ const RegisterNutritionistPersonal: React.FC = () => {
     if (!form.modalidad) return setError("Selecciona una modalidad.");
     if (!form.formacion) return setError("Selecciona una formación.");
     if (!form.especializacion) return setError("Selecciona una especialización.");
-    if (!form.disponibilidad) return setError("Selecciona una disponibilidad.");
+    if (!form.horarioDesde) return setError("Selecciona el horario de inicio.");
+    if (!form.horarioHasta) return setError("Selecciona el horario de fin.");
 
     setIsLoading(true);
 
     try {
-      // Guardamos SIN password
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
@@ -117,7 +118,8 @@ const RegisterNutritionistPersonal: React.FC = () => {
           modalidad: form.modalidad,
           formacion: form.formacion,
           especializacion: form.especializacion,
-          disponibilidad: form.disponibilidad,
+          horarioDesde: form.horarioDesde,
+          horarioHasta: form.horarioHasta,
         })
       );
 
@@ -160,12 +162,19 @@ const RegisterNutritionistPersonal: React.FC = () => {
     { value: "perdida_peso", label: "Pérdida de peso" },
   ];
 
-  const disponibilidadOptions = [
-    { value: "", label: "Elige una opción" },
-    { value: "mananas", label: "Mañanas" },
-    { value: "tardes", label: "Tardes" },
-    { value: "noches", label: "Noches" },
-    { value: "flexible", label: "Flexible" },
+  const horarioOptions = [
+    { value: "", label: "Hora" },
+    { value: "08:00", label: "08:00" },
+    { value: "09:00", label: "09:00" },
+    { value: "10:00", label: "10:00" },
+    { value: "11:00", label: "11:00" },
+    { value: "12:00", label: "12:00" },
+    { value: "13:00", label: "13:00" },
+    { value: "14:00", label: "14:00" },
+    { value: "15:00", label: "15:00" },
+    { value: "16:00", label: "16:00" },
+    { value: "17:00", label: "17:00" },
+    { value: "18:00", label: "18:00" },
   ];
 
   return (
@@ -186,8 +195,22 @@ const RegisterNutritionistPersonal: React.FC = () => {
           </div>
         )}
 
-        <Input label="Nombre completo*" name="fullName" required value={form.fullName} onChange={handleChange} />
-        <Input label="Correo electrónico*" name="email" type="email" required value={form.email} onChange={handleChange} />
+        <Input
+          label="Nombre completo*"
+          name="fullName"
+          required
+          value={form.fullName}
+          onChange={handleChange}
+        />
+
+        <Input
+          label="Correo electrónico*"
+          name="email"
+          type="email"
+          required
+          value={form.email}
+          onChange={handleChange}
+        />
 
         <PasswordInput
           label="Contraseña*"
@@ -200,13 +223,63 @@ const RegisterNutritionistPersonal: React.FC = () => {
           label="Repetir contraseña*"
           required
           value={form.confirmPassword}
-          onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, confirmPassword: e.target.value }))
+          }
         />
 
-        <Select label="Modalidad*" value={form.modalidad} onChange={(e) => setForm((p) => ({ ...p, modalidad: e.target.value }))} options={modalidadOptions} />
-        <Select label="Formación*" value={form.formacion} onChange={(e) => setForm((p) => ({ ...p, formacion: e.target.value }))} options={formacionOptions} />
-        <Select label="Especialización*" value={form.especializacion} onChange={(e) => setForm((p) => ({ ...p, especializacion: e.target.value }))} options={especializacionOptions} />
-        <Select label="Disponibilidad*" value={form.disponibilidad} onChange={(e) => setForm((p) => ({ ...p, disponibilidad: e.target.value }))} options={disponibilidadOptions} />
+        <Select
+          label="Modalidad*"
+          value={form.modalidad}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, modalidad: e.target.value }))
+          }
+          options={modalidadOptions}
+        />
+
+        <Select
+          label="Formación*"
+          value={form.formacion}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, formacion: e.target.value }))
+          }
+          options={formacionOptions}
+        />
+
+        <Select
+          label="Especialización*"
+          value={form.especializacion}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, especializacion: e.target.value }))
+          }
+          options={especializacionOptions}
+        />
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-700">
+            Disponibilidad horaria*
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Desde"
+              value={form.horarioDesde}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, horarioDesde: e.target.value }))
+              }
+              options={horarioOptions}
+            />
+
+            <Select
+              label="Hasta"
+              value={form.horarioHasta}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, horarioHasta: e.target.value }))
+              }
+              options={horarioOptions}
+            />
+          </div>
+        </div>
 
         <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
           Continuar
@@ -238,7 +311,10 @@ const RegisterNutritionistPersonal: React.FC = () => {
 
         <p className="text-center text-sm text-slate-500">
           ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-[#7ECD43] font-medium hover:underline">
+          <Link
+            to="/login"
+            className="text-[#7ECD43] font-medium hover:underline"
+          >
             Inicia sesión
           </Link>
         </p>
