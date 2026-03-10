@@ -1,6 +1,7 @@
 import React from "react";
 import { Patient, Nutritionist } from "../../types";
 import { ProfileField } from "./ProfileField";
+import { AvailabilityField } from "./AvailabilityField";
 
 type Props = {
   profile: Patient | Nutritionist;
@@ -16,7 +17,13 @@ export const ProfileFields: React.FC<Props> = ({ profile }) => {
         <ProfileField label="Ciudad" value={profile.city} />
         <ProfileField label="Correo electrónico" value={profile.email} />
         <ProfileField label="Modalidad" value={profile.modality} />
-        <ProfileField label="Disponibilidad" value={profile.availability} />
+        <AvailabilityField
+          label="Disponibilidad horaria"
+          value={{
+            start: profile.availabilityStart,
+            end: profile.availabilityEnd,
+          }}
+        />
         <ProfileField label="Objetivo" value={profile.goal} />
         <ProfileField label="¿Padeces alguna condición?" value={profile.medicalCondition} />
         <ProfileField label="Descripción adicional" value={profile.otherConditionDescription} />
@@ -30,7 +37,13 @@ export const ProfileFields: React.FC<Props> = ({ profile }) => {
         <ProfileField label="Correo electrónico" value={profile.email} />
         <ProfileField label="Matrícula" value={profile.licenseNumber} />
         <ProfileField label="Modalidad de atención" value={profile.modality} />
-        <ProfileField label="Disponibilidad" value={profile.availability} />
+        <AvailabilityField
+          label="Disponibilidad horaria"
+          value={{
+            start: profile.availabilityStart,
+            end: profile.availabilityEnd,
+          }}
+        />
         <ProfileField label="Formación" value={profile.education} />
         <ProfileField label="Especialización" value={profile.specialization} />
     </section>
