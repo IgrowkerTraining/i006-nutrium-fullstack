@@ -24,10 +24,6 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.login({ email, password });
-       console.log("🔴 response completo:", response);
-       console.log("🔴 token:", response.token);                        
-       storage.setToken(response.token);
-       console.log("🔴 token guardado:", localStorage.getItem('nutrium_token'));
       storage.setToken(response.token);
 
       let userData: any = { ...response.user, fullName: (response.user as any).name || response.user.fullName };
@@ -52,15 +48,15 @@ const Login: React.FC = () => {
           }
         } else if (response.user.role === "nutritionist") {
           const profileRes = await api.getNutritionistProfile(response.token);
-           console.log("🟡 nutritionist profileRes:", profileRes)
           const p = profileRes?.data?.profile;
-          console.log("🟡 p:", p);
           if (p) {
             userData = {
               ...userData,
               licenseNumber: p.license_number || "",
               modality: p.modality || "",
-              availability: p.availabilities?.[0] || "Mañana",
+              availability: typeof p.availabilities?.[0] === "object"
+                ? `${p.availabilities?.[0]?.start_time} - ${p.availabilities?.[0]?.end_time}`
+                : p.availabilities?.[0] || "No especificada",
               education: p.bio || "",
               specialization: p.tags?.map((t: any) => t.name).join(", ") || "",
               country: p.country || "",
