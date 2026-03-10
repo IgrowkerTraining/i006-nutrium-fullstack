@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ProfileField } from "../components/profile/ProfileField";
 import { Button } from "../components/common/Button";
+import AppointmentModal from "../components/common/AppointmentModal";
 import nutricionistaDefault from "../assets/nutricionista.png";
 
 // TODO: Añadir los elementos reales del diseño, esta hecho solo de paso.
@@ -9,6 +10,7 @@ import nutricionistaDefault from "../assets/nutricionista.png";
 const PerfilesMatchNutri: React.FC = () => {
   const { state: nutri } = useLocation();
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   if (!nutri) {
     return <p className="p-6">No se encontró información del nutricionista.</p>;
@@ -56,7 +58,7 @@ const PerfilesMatchNutri: React.FC = () => {
         )}
 
         <section className="flex flex-col gap-4 mx-6 mt-8">
-          <Button className="w-full rounded-2xl">
+          <Button className="w-full rounded-2xl" onClick={() => setShowModal(true)}>
             Agendar cita
           </Button>
           <Button
@@ -67,6 +69,13 @@ const PerfilesMatchNutri: React.FC = () => {
             Volver
           </Button>
         </section>
+
+        {showModal && (
+          <AppointmentModal
+            nutritionistId={nutri.user_id || nutri.user?.id || nutri.id}
+            onClose={() => setShowModal(false)}
+          />
+        )}
       </main>
     </div>
   );
