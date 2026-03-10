@@ -94,6 +94,8 @@ beforeEach(() => {
   sessionStorage.clear();
   mockedStorage.getToken.mockReturnValue(null);
   mockedStorage.getUser.mockReturnValue(null);
+  // enrichMatches llama a getNutritionists en background
+  mockedApi.getNutritionists.mockResolvedValue([]);
 });
 
 describe("MatchNutriList - listado de nutricionistas", () => {
@@ -124,6 +126,17 @@ describe("MatchNutriList - listado de nutricionistas", () => {
       expect(screen.getByText(/Carlos Ruiz/)).toBeInTheDocument();
       expect(screen.getByText("Compatibilidad: 95%")).toBeInTheDocument();
       expect(screen.getByText("Compatibilidad: 72%")).toBeInTheDocument();
+    });
+  });
+
+  it("enriquece matches de IA con matrícula del backend", async () => {
+    mockedApi.getNutritionists.mockResolvedValue(backendNutritionists);
+    mockLocationState = { matches: aiMatches };
+    renderList();
+
+    await waitFor(() => {
+      expect(screen.getByText(/MP 4597/)).toBeInTheDocument();
+      expect(screen.getByText(/MP 1234/)).toBeInTheDocument();
     });
   });
 

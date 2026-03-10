@@ -82,6 +82,29 @@ const MatchNutriList: React.FC = () => {
     }
   };
 
+  // Enriquecer matches de IA con datos del backend (matrícula, modalidad, foto)
+  const enrichMatches = async (mapped: any[]) => {
+    try {
+      const fullList = await api.getNutritionists();
+      const enriched = mapped.map((m: any) => {
+        const full = fullList.find((f: any) => f.id === m.id);
+        if (full) {
+          return {
+            ...m,
+            license_number: full.license_number || m.license_number,
+            modality: full.modality || m.modality,
+            profile_picture_url: full.profile_picture_url || m.profile_picture_url,
+          };
+        }
+        return m;
+      });
+      setNutricionistas(enriched);
+      sessionStorage.setItem("nutrium_matches", JSON.stringify(enriched));
+    } catch {
+      // Silencioso - se muestran sin matrícula si falla
+    }
+  };
+
   useEffect(() => {
     // 1. Si la pantalla de carga trajo matches de IA, usarlos
     const stateMatches = (location.state as any)?.matches;
@@ -89,6 +112,7 @@ const MatchNutriList: React.FC = () => {
       const mapped = mapMatches(stateMatches);
       setNutricionistas(mapped);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
+      enrichMatches(mapped);
       return;
     }
 
@@ -121,6 +145,7 @@ const MatchNutriList: React.FC = () => {
           const mapped = mapMatches(matches);
           setNutricionistas(mapped);
           sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
+          enrichMatches(mapped);
         }
       })
       .catch(async (err) => {
