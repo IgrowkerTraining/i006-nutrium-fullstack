@@ -4,6 +4,7 @@ import { AuthLayout } from "../../components/layout/AuthLayout";
 import { Button } from "../../components/common/Button";
 import { ReadOnlyField } from "../../components/common/ReadOnlyField";
 import { api } from "../../services/api";
+import { storage } from "../../utils/storage";
 
 type NutritionistPersonal = {
   fullName: string;
@@ -11,7 +12,8 @@ type NutritionistPersonal = {
   modalidad: string;
   formacion: string;
   especializacion: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
 };
 
 type NutritionistProfessional = {
@@ -30,7 +32,8 @@ type PatientPersonal = {
   city: string;
   email: string;
   modalidad: string;
-  disponibilidad: string;
+  horarioDesde: string;
+  horarioHasta: string;
   objetivo: string;
 };
 
@@ -49,6 +52,15 @@ function safeParse<T>(key: string): T | null {
   }
 }
 
+const LABEL_MAP: Record<string, Record<string, string>> = {
+  modalidad: { online: "Virtual", presencial: "Presencial", hibrido: "Mixto" },
+  disponibilidad: { manana: "Mañana", tarde: "Tarde", flexible: "Flexible" },
+  country: { AR: "Argentina", UY: "Uruguay", ES: "España" },
+};
+
+const displayLabel = (field: string, value: string) =>
+  LABEL_MAP[field]?.[value] || value;
+
 const RegisterConfirm: React.FC = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("nutrium_role");
@@ -58,14 +70,17 @@ const RegisterConfirm: React.FC = () => {
     () => safeParse<NutritionistPersonal>("nutrium_register_nutritionist_personal"),
     []
   );
+
   const nutriProfessional = useMemo(
     () => safeParse<NutritionistProfessional>("nutrium_register_nutritionist_professional"),
     []
   );
+
   const patientPersonal = useMemo(
     () => safeParse<PatientPersonal>("nutrium_register_patient_personal"),
     []
   );
+
   const patientHealth = useMemo(
     () => safeParse<PatientHealth>("nutrium_register_patient_health"),
     []
@@ -131,19 +146,37 @@ const RegisterConfirm: React.FC = () => {
           return navigate("/register/nutritionist/personal");
         }
 
-        const { token } = await api.login({
+        const { token, user } = await api.login({
           email: nutriPersonal.email,
           password,
         });
+        storage.setToken(token);
+        if (user) storage.setUser(user);
 
         // 2. Crear perfil de nutricionista
-        await api.createNutritionistProfile(token, {
+        const profilePayload = {
           license_number: nutriProfessional.matricula,
           bio: nutriPersonal.especializacion || "Nutricionista profesional",
           modality: nutriPersonal.modalidad || "online",
           years_of_experience: parseInt(nutriProfessional.anosExperiencia) || 0,
+          country: nutriProfessional.pais,
+          city: nutriProfessional.ciudad,
           tag_ids: nutriProfessional.tagIds || [],
-        });
+        };
+        console.log("[RegisterConfirm] Profile payload:", profilePayload);
+
+        try {
+          await api.createNutritionistProfile(token, profilePayload);
+        } catch (profileErr: any) {
+          console.warn("[RegisterConfirm] Profile creation failed:", profileErr.message);
+          // No bloquear el flujo: la cuenta ya existe, el perfil se puede completar después
+          setError(
+            "Tu cuenta fue creada pero el perfil no se pudo guardar (error del servidor). " +
+            "Podrás completarlo después. Redirigiendo..."
+          );
+          // Esperar un momento para que el usuario vea el mensaje
+          await new Promise((r) => setTimeout(r, 2000));
+        }
 
         // 3. Limpiar contraseña temporal
         sessionStorage.removeItem("nutrium_temp_password");
@@ -151,13 +184,51 @@ const RegisterConfirm: React.FC = () => {
         return navigate("/match-nutricionista");
       }
 
-      if (role === "patient") {
-        if (import.meta.env.DEV && isDevMock) {
-          sessionStorage.removeItem("nutrium_dev_mock");
-          return navigate("/match-paciente");
+      if (role === "patient" && patientPersonal && patientHealth) {
+        setIsLoading(true);
+        setError(null);
+
+        const password = sessionStorage.getItem("nutrium_temp_password");
+        if (!password) {
+          alert("Sesión expirada. Vuelve a introducir tus datos.");
+          return navigate("/register/patient/personal");
         }
+
+        const { token, user } = await api.login({
+          email: patientPersonal.email,
+          password,
+        });
+        storage.setToken(token);
+        if (user) storage.setUser(user);
+
+        const patientProfilePayload = {
+          birth_date: patientPersonal.birthDate,
+          gender: "prefiero_no_decir",
+          health_goals: patientPersonal.objetivo || "Mejorar mi salud general",
+          languages: ["es"],
+          modality: patientPersonal.modalidad,
+          country: displayLabel("country", patientPersonal.country),
+          city: patientPersonal.city,
+        };
+        console.log("[RegisterConfirm] Patient profile payload:", patientProfilePayload);
+
+        try {
+          await api.upsertPatientProfile(token, patientProfilePayload);
+        } catch (profileErr: any) {
+          console.warn("[RegisterConfirm] Patient profile creation failed:", profileErr.message);
+          setError(
+            "Tu cuenta fue creada pero el perfil no se pudo guardar: " + profileErr.message +
+            ". Redirigiendo..."
+          );
+          await new Promise((r) => setTimeout(r, 2500));
+        }
+
+        sessionStorage.removeItem("nutrium_temp_password");
+
         return navigate("/match-paciente");
       }
+
+      if (role === "patient") return navigate("/match-paciente");
       navigate("/landing-acceso");
     } catch (err: any) {
       console.error("Error:", err);
@@ -189,7 +260,9 @@ const RegisterConfirm: React.FC = () => {
 
         <div className="text-center">
           <h2 className="text-xl font-semibold">Confirmación de datos</h2>
-          <p className="text-sm text-slate-500 mt-1">Revisa tus datos antes de continuar.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Revisa tus datos antes de continuar.
+          </p>
         </div>
       </div>
 
@@ -198,7 +271,9 @@ const RegisterConfirm: React.FC = () => {
           <>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Personal</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Personal
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/nutritionist/personal")}
@@ -210,18 +285,25 @@ const RegisterConfirm: React.FC = () => {
 
               <ReadOnlyField label="Nombre completo" value={nutriPersonal.fullName} />
               <ReadOnlyField label="Correo electrónico" value={nutriPersonal.email} />
-              <ReadOnlyField label="Modalidad" value={nutriPersonal.modalidad} />
+              <ReadOnlyField label="Modalidad" value={displayLabel("modalidad", nutriPersonal.modalidad)} />
               <ReadOnlyField label="Formación" value={nutriPersonal.formacion} />
               <ReadOnlyField label="Especialización" value={nutriPersonal.especializacion} />
-              <ReadOnlyField label="Disponibilidad" value={nutriPersonal.disponibilidad} />
+              <ReadOnlyField
+                label="Disponibilidad horaria"
+                value={`${nutriPersonal.horarioDesde} - ${nutriPersonal.horarioHasta}`}
+              />
             </section>
 
             <section className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Profesional</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Profesional
+                </h3>
                 <button
                   type="button"
-                  onClick={() => navigate("/register/nutritionist/professional")}
+                  onClick={() =>
+                    navigate("/register/nutritionist/professional")
+                  }
                   className="text-sm text-[#7ECD43] font-medium hover:underline"
                 >
                   Editar
@@ -243,7 +325,9 @@ const RegisterConfirm: React.FC = () => {
           <>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario Personal</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario Personal
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/patient/personal")}
@@ -255,17 +339,22 @@ const RegisterConfirm: React.FC = () => {
 
               <ReadOnlyField label="Nombre completo" value={patientPersonal.fullName} />
               <ReadOnlyField label="Fecha de nacimiento" value={patientPersonal.birthDate} />
-              <ReadOnlyField label="País" value={patientPersonal.country} />
+              <ReadOnlyField label="País" value={displayLabel("country", patientPersonal.country)} />
               <ReadOnlyField label="Ciudad" value={patientPersonal.city} />
               <ReadOnlyField label="Correo electrónico" value={patientPersonal.email} />
               <ReadOnlyField label="Modalidad" value={patientPersonal.modalidad} />
-              <ReadOnlyField label="Disponibilidad" value={patientPersonal.disponibilidad} />
+              <ReadOnlyField
+                label="Disponibilidad horaria"
+                value={`${patientPersonal.horarioDesde} - ${patientPersonal.horarioHasta}`}
+              />
               <ReadOnlyField label="Objetivo" value={patientPersonal.objetivo} />
             </section>
 
             <section className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-700">Formulario de Salud</h3>
+                <h3 className="font-semibold text-slate-700">
+                  Formulario de Salud
+                </h3>
                 <button
                   type="button"
                   onClick={() => navigate("/register/patient/health")}
@@ -275,9 +364,16 @@ const RegisterConfirm: React.FC = () => {
                 </button>
               </div>
 
-              <ReadOnlyField label="¿Padeces alguna condición?" value={patientHealth.condition} />
+              <ReadOnlyField
+                label="¿Padeces alguna condición?"
+                value={patientHealth.condition}
+              />
+
               {patientHealth.condition === "otra" && (
-                <ReadOnlyField label="Descripción" value={patientHealth.conditionDetails} />
+                <ReadOnlyField
+                  label="Descripción"
+                  value={patientHealth.conditionDetails}
+                />
               )}
             </section>
           </>

@@ -14,7 +14,7 @@ export const mockPatient: Patient = {
   birthDate: "1993-07-23",
   country: "España",
   city: "A Coruña",
-  modality: "Virtual",
+  modality: "online",
   availability: "Tarde",
   goal: "Perder peso",
   medicalCondition: "SIBO",
@@ -34,7 +34,7 @@ export const mockNutritionist: Nutritionist = {
   avatarUrl: "https://previews.123rf.com/images/yupiramos/yupiramos1705/yupiramos170514716/77987175-young-man-profile-icon-vector-illustration-graphic-design.avif",
 
   licenseNumber: "MP 4597",
-  modality: "Mixto",
+  modality: "hibrido",
   availability: "Mañana",
   education: "Nutrición deportiva",
   specialization: "Alto rendimiento",

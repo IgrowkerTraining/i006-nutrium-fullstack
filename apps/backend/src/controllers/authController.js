@@ -83,9 +83,17 @@ class AuthController {
     } catch (error) {
       console.error('Error en login:', error.message);
 
-      // Errores de autenticación
+      // Errores de autenticación (credenciales inválidas)
       if (error.statusCode === 401) {
         return res.status(401).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      // Cuenta desactivada (Soft Delete)
+      if (error.statusCode === 403) {
+        return res.status(403).json({
           success: false,
           message: error.message,
         });

@@ -34,7 +34,7 @@ export const Select: React.FC<SelectProps> = ({
       <select
         id={selectId}
         className={`
-          w-full bg-white border border-slate-200 rounded-lg px-3 py-2
+          w-full bg-white border border-slate-200 rounded-xl px-3 py-3
           text-slate-800
           focus:outline-none focus:ring-2 focus:ring-[#7ECD43]/40 focus:border-[#7ECD43]
           transition-all duration-200
