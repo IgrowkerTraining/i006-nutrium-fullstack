@@ -1,11 +1,11 @@
-require('dotenv').config();
-const { Sequelize } = require('sequelize');
+require("dotenv").config();
+const { Sequelize } = require("sequelize");
 
 // Render (and many PaaS) provides DATABASE_URL as a single connection string.
 // Fall back to individual variables for local dev.
 const sequelize = process.env.DATABASE_URL
   ? new Sequelize(process.env.DATABASE_URL, {
-      dialect: 'postgres',
+      dialect: "postgres",
       logging: false,
       dialectOptions: {
         ssl: {
@@ -21,13 +21,13 @@ const sequelize = process.env.DATABASE_URL
       },
     })
   : new Sequelize(
-      process.env.DB_NAME || 'nutriom_db',
-      process.env.DB_USER || 'postgres',
-      process.env.DB_PASS || 'password',
+      process.env.DB_NAME || "nutriom_db",
+      process.env.DB_USER || "postgres",
+      process.env.DB_PASS || "password",
       {
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST || "localhost",
         port: process.env.DB_PORT || 5432,
-        dialect: 'postgres',
+        dialect: "postgres",
         logging: false,
         pool: {
           max: 5,
@@ -35,7 +35,7 @@ const sequelize = process.env.DATABASE_URL
           acquire: 30000,
           idle: 10000,
         },
-      }
+      },
     );
 
 module.exports = sequelize;
