@@ -18,7 +18,7 @@ export const ProfileFields: React.FC<Props> = ({ profile }) => {
         <ProfileField label="Correo electrónico" value={profile.email} />
         <ProfileField label="Modalidad" value={profile.modality} />
         <AvailabilityField
-          label="Disponibilidad horaria"
+          label="Disponibilidad"
           value={{
             start: profile.availabilityStart,
             end: profile.availabilityEnd,

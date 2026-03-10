@@ -17,7 +17,6 @@ const PerfilesMatchPaciente: React.FC = () => {
       <main className="flex-1 pb-24">
         <section className="px-6">
           <h2 className="text-xl font-semibold text-left">Perfil del Paciente</h2>
-          <p className="text-sm text-red-500 font-bold">** Diseño no definitivo **</p>
         </section>
 
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
