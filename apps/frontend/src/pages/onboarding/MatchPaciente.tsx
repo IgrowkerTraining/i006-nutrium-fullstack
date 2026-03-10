@@ -16,9 +16,22 @@ const Match: React.FC = () => {
     const minDelay = new Promise((resolve) => setTimeout(resolve, 3000));
 
     if (hasRealSession && token && user?.id) {
-      const fetchMatches = api.getPatientRecommendations(token, user.id);
+      const fetchWithRetries = async (): Promise<any[]> => {
+        const MAX_RETRIES = 3;
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+          try {
+            return await api.getPatientRecommendations(token!, user!.id);
+          } catch (err: any) {
+            console.warn(`[MatchPaciente] Intento ${attempt}/${MAX_RETRIES} falló:`, err.message);
+            if (attempt < MAX_RETRIES) {
+              await new Promise((r) => setTimeout(r, 1000));
+            }
+          }
+        }
+        throw new Error("IA no disponible tras varios intentos");
+      };
 
-      Promise.all([minDelay, fetchMatches])
+      Promise.all([minDelay, fetchWithRetries()])
         .then(([, matches]) => {
           navigate("/match/nutri-list", { state: { matches } });
         })
