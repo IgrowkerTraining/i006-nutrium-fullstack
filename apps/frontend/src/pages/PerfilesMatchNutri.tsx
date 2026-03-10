@@ -27,11 +27,11 @@ const PerfilesMatchNutri: React.FC = () => {
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
 
         <section className="flex justify-center mx-6 my-[clamp(43px,10.94vw,80px)]">
-          <img
-            src={nutri.profile_picture_url || nutricionistaDefault}
-            alt={nutri.user?.name || "Nutricionista"}
-            className="w-[clamp(260px,85vw,600px)] h-auto aspect-[334/293] object-cover rounded-xl"
-          />
+          <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center">
+            <span className="text-6xl text-slate-400">
+              {(paciente.name)?.charAt(0)?.toUpperCase() || "?"}
+            </span>
+          </div>
         </section>
 
         <section className="flex flex-col gap-4">

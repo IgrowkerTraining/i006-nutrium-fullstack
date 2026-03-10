@@ -94,7 +94,11 @@ const MatchPacienteList: React.FC = () => {
       {displayPacientes.map((p: any) => (
         <div key={p.id} onClick={() => navigate(`/perfiles-match-paciente/${p.id}`, { state: p })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
-            <img src={p.foto || paciente1} alt="foto perfil paciente" className="w-[83px] h-[83px] rounded-full object-cover object-center bg-slate-100" />
+            <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl font-bold text-slate-400">
+                {p.name?.charAt(0)?.toUpperCase() || "?"}
+              </span>
+            </div>
             <article>
               <h3 className="font-bold text-[1.25em]">{p.name}</h3>
               {p.profesión && <p className="text-gray-400">{p.profesión}</p>}
