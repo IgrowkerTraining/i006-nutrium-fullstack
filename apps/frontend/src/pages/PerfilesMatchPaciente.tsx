@@ -1,14 +1,56 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ProfileField } from "../components/profile/ProfileField";
 import { Button } from "../components/common/Button";
 import nutricionistaDefault from "../assets/nutricionista.png";
+import { api } from "../services/api";
+import { storage } from "../utils/storage";
 
 // TODO: Añadir los elementos reales del diseño, esta hecho solo de paso.
 
 const PerfilesMatchPaciente: React.FC = () => {
   const { state: paciente } = useLocation();
+  const { id: patientId } = useParams();
   const navigate = useNavigate();
+  const [hideButton, setHideButton] = useState(false);
+  const [pendingAppointmentId, setPendingAppointmentId] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    const token = storage.getToken();
+    if (!token || !patientId) return;
+
+    api.getMyCalendar(token)
+      .then((appointments) => {
+        const patientAppts = (appointments || []).filter(
+          (a: any) => a.patient?.id === patientId
+        );
+        const pending = patientAppts.find((a: any) => a.status === "pending");
+        if (pending) {
+          setPendingAppointmentId(pending.id);
+        } else if (patientAppts.length > 0) {
+          setHideButton(true);
+        }
+      })
+      .catch(() => {});
+  }, [patientId]);
+
+  const handleConfirm = async () => {
+    if (!pendingAppointmentId) return;
+    const token = storage.getToken();
+    if (!token) return;
+
+    setConfirming(true);
+    try {
+      await api.confirmAppointment(token, pendingAppointmentId);
+      setHideButton(true);
+      setPendingAppointmentId(null);
+    } catch (err: any) {
+      console.error("[PerfilesMatchPaciente] Error al confirmar:", err.message);
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   if (!paciente) {
     return <p className="p-6">No se encontró información del paciente.</p>;
@@ -41,9 +83,15 @@ const PerfilesMatchPaciente: React.FC = () => {
         </section>
 
         <section className="flex flex-col gap-4 mx-6 mt-8">
-          <Button className="w-full rounded-2xl">
-            Agendar cita
-          </Button>
+          {!hideButton && pendingAppointmentId && (
+            <Button
+              className="w-full rounded-2xl"
+              onClick={handleConfirm}
+              disabled={confirming}
+            >
+              {confirming ? "Confirmando..." : "Aceptar cita"}
+            </Button>
+          )}
           <Button
             variant="outline"
             className="w-full rounded-2xl"
