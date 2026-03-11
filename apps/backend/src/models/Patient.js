@@ -100,17 +100,19 @@ Patient.init(
       },
     },
 
-    // URL de la foto de perfil (opcional, pero si se envía debe ser URL válida)
+    // Foto de perfil: acepta URLs http/https o imágenes codificadas en Base64
     profile_picture: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true,
       validate: {
-        isUrlIfPresent(value) {
+        isUrlOrBase64IfPresent(value) {
           if (value !== null && value !== undefined && value !== "") {
             const urlPattern = /^https?:\/\/.+/i;
-            if (!urlPattern.test(value)) {
+            const base64Pattern =
+              /^data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/]+=*$/i;
+            if (!urlPattern.test(value) && !base64Pattern.test(value)) {
               throw new Error(
-                "profile_picture debe ser una URL válida (http/https)",
+                "profile_picture debe ser una URL válida (http/https) o una imagen en Base64 (data:image/...;base64,...)",
               );
             }
           }

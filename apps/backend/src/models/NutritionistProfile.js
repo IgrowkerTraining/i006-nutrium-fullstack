@@ -81,7 +81,7 @@ NutritionistProfile.init(
     location: { type: DataTypes.STRING(255), allowNull: true },
     accepts_new_patients: { type: DataTypes.BOOLEAN, defaultValue: true },
     consultation_fee_range: { type: DataTypes.STRING(100), allowNull: true },
-    profile_picture_url: { type: DataTypes.STRING(500), allowNull: true },
+    profile_picture_url: { type: DataTypes.TEXT, allowNull: true },
     rating: {
       type: DataTypes.DECIMAL(3, 2),
       defaultValue: 0.0,
