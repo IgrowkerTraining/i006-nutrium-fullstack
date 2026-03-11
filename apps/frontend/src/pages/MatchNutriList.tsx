@@ -56,6 +56,8 @@ const MatchNutriList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isLicenseVerified = (license: string) => /^[A-Za-z]{2}\d{4}$/.test(license);
+
   const mapMatches = (matches: any[]) =>
     matches.map((m: any) => ({
       id: m.nutritionist_id,
@@ -180,7 +182,10 @@ const MatchNutriList: React.FC = () => {
               <h3 className="font-semibold text-[1.125em] leading-[1.625em]">Dra./Dr. {n.user?.name || "Sin nombre"}</h3>
               <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">{n.bio || "Nutricionista"}</p>
               <div className="flex gap-3 items-center my-2">
-                <img src={noVerificado} alt="no verificado" />
+                <img
+                  src={isLicenseVerified(n.license_number) ? verificado : noVerificado}
+                  alt={isLicenseVerified(n.license_number) ? "verificado" : "no verificado"}
+                />
                 <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">Matrícula: {n.license_number}</p>
               </div>
               {n.compatibility != null && (
