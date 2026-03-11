@@ -6,8 +6,6 @@ import nutricionistaDefault from "../assets/nutricionista.png";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 
-// TODO: Añadir los elementos reales del diseño, esta hecho solo de paso.
-
 const PerfilesMatchPaciente: React.FC = () => {
   const { state: paciente } = useLocation();
   const { id: patientId } = useParams();
@@ -63,7 +61,6 @@ const PerfilesMatchPaciente: React.FC = () => {
           <h2 className="text-xl font-semibold text-left">
             Perfil del Paciente
           </h2>
-          <p className="text-sm text-red-500 font-bold">** Diseño no definitivo **</p>
         </section>
 
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
