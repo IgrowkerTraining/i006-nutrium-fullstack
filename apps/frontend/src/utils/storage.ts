@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from '../constants/routes';
-import { User } from '../types';
+import { Notification, User } from '../types';
 
 export const storage = {
   getUser(): User | null {
@@ -35,5 +35,37 @@ export const storage = {
   clear(): void {
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
+  },
+
+  // --- Notificaciones ---
+
+  // Guarda la "foto" de cómo están las citas ahora
+  setAppointmentSnapshot(userId: string, appointments: any[]): void {
+    localStorage.setItem(`appointments_${userId}`, JSON.stringify(appointments));
+  },
+
+  // Lee la "foto" anterior para comparar
+  getAppointmentSnapshot(userId: string): any[] {
+    try {
+      const data = localStorage.getItem(`appointments_${userId}`);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  // Guarda las notificaciones generadas
+  setNotifications(userId: string, notifications: Notification[]): void {
+    localStorage.setItem(`notif_${userId}`, JSON.stringify(notifications));
+  },
+
+  // Lee las notificaciones guardadas
+  getNotifications(userId: string): Notification[] {
+    try {
+      const data = localStorage.getItem(`notif_${userId}`);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
   },
 };
