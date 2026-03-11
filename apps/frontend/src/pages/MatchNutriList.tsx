@@ -12,6 +12,7 @@ import AppLayout from "../components/layout/AppLayout";
 import verificado from "../assets/estado=Verificado.png"
 import noVerificado from "../assets/estado=noVerificado.png"
 import { useNavigate, useLocation } from "react-router-dom";
+import nutriBusca from "../assets/nutri_busca.png"
 
 //Datos hardcodeados para pruebas
 const mockNutricionistas = [
@@ -47,12 +48,17 @@ const MatchNutriList: React.FC = () => {
   const [nutricionistas, setNutricionistas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiFailed, setAiFailed] = useState(false);
   const [showModal, setShowModal] = useState<string | null>(null); // nutritionist_id o null
   const token = storage.getToken();
   const user = storage.getUser();
   const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
   // Prioridad: datos reales (IA o backend) → mocks como último recurso
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
+  const hasAnyCompatibility = displayNutricionistas.some(
+    (n: any) => n.compatibility != null && n.compatibility > 0
+  );
+  const showAiFallback = aiFailed || !hasAnyCompatibility;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -117,6 +123,7 @@ const MatchNutriList: React.FC = () => {
     const fallbackNutris = (location.state as any)?.fallbackNutritionists;
     if (fallbackNutris && fallbackNutris.length > 0) {
       setNutricionistas(fallbackNutris);
+      setAiFailed(true);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
       return;
     }
@@ -137,16 +144,20 @@ const MatchNutriList: React.FC = () => {
     }
     setLoading(true);
     api.getPatientRecommendations(token, user.id)
-      .then((matches) => {
+      .then(async (matches) => {
         if (matches.length > 0) {
           const mapped = mapMatches(matches);
           setNutricionistas(mapped);
           sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
           enrichMatches(mapped);
+        } else {
+          setAiFailed(true);
+          await fetchBackendFallback();
         }
       })
       .catch(async (err) => {
         console.warn("[MatchNutriList] IA no disponible, intentando backend:", err.message);
+        setAiFailed(true);
         try {
           await fetchBackendFallback();
         } catch (backendErr) {
@@ -167,6 +178,18 @@ const MatchNutriList: React.FC = () => {
       {!hasRealSession && (
         <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg">
           Necesitas iniciar sesión real para ver recomendaciones.
+        </div>
+      )}
+
+      {showAiFallback && (
+        <div className="text-center">
+          <p className="text-[0.85em] mb-1 text-[#FF3131]">
+            No se ha encontrado ningún nutricionista basado en tu perfil.
+          </p>
+          <img src={nutriBusca} alt="nutri está buscando" className="mx-auto w-48 h-48 mt-2 mb-4" />
+          <p className="text-[0.85em] leading-[1.4em] mb-4 border-b border-[#7ECD43] pb-2">
+            Recomendamos nutricionistas más populares.
+          </p>
         </div>
       )}
 
