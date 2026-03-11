@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { AppointmentCard } from "./AppointmentCard";
 import { api } from "../../services/api";
 import { storage } from "../../utils/storage";
+import nutriSad from "../../assets/nutri_sad.png";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -64,7 +65,12 @@ export const PatientCalendarView: React.FC = () => {
   }
 
   if (appointments.length === 0) {
-    return <p className="text-red-500 font-medium mt-4">Aún no tienes citas agendadas</p>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <p className="text-[#FF3131] font-medium">Aún no tienes citas agendadas.</p>
+        <img src={nutriSad} alt="Sin citas" className="w-64 h-64 mt-4" />
+      </div>
+    );
   }
 
   return (

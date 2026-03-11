@@ -12,7 +12,9 @@ const Calendario: React.FC = () => {
       <section className="px-6">
         <h2 className="text-xl font-semibold">Próximas citas</h2>
         <p className="text-sm text-slate-500">
-          Estas son sus próximas citas.
+          {user?.role === "nutritionist"
+            ? "Estas son sus próximas citas."
+            : "Citas pendientes con tu nutricionista."}
         </p>
       </section>
 
