@@ -11,7 +11,7 @@ COPY package*.json pnpm-lock.yaml* ./
 RUN npm install -g pnpm
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile && pnpm store prune
+RUN pnpm install --no-frozen-lockfile && pnpm store prune
 
 # Development stage
 FROM base AS development
