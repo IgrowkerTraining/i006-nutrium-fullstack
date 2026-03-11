@@ -33,3 +33,6 @@ dist-ssr
 .env.test
 .env.copy
 .env.test.local
+
+# Docker local overrides
+docker-compose.override.yml
