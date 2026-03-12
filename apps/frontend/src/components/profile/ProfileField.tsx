@@ -14,8 +14,8 @@ export const ProfileField: React.FC<ProfileFieldProps> = ({ label, value }) => {
 
   return (
     <div className="flex flex-col gap-1 mx-6">
-      <h6 className="text-sm font-black">{label}</h6>
-      <div className="w-full bg-white rounded-xl px-4 py-3 font-black">
+      <h6 className="text-sm font-semibold text-gray-900">{label}</h6>
+      <div className="w-full bg-white rounded-xl px-4 py-3 font-normal text-gray-900">
         {displayValue}
       </div>
     </div>

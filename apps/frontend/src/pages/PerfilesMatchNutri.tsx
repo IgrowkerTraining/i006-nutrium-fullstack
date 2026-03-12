@@ -36,21 +36,26 @@ const PerfilesMatchNutri: React.FC = () => {
 
         <section className="flex flex-col gap-4">
           <ProfileField label="Nombre completo" value={`Dra./Dr. ${nutri.user?.name || "Sin nombre"}`} />
-          <ProfileField label="Especialización" value={nutri.bio || "No especificada"} />
           <ProfileField label="Matrícula" value={nutri.license_number || "No disponible"} />
-          <ProfileField label="Modalidad de atención" value={nutri.modality || "No especificada"} />
-          <ProfileField label="Experiencia" value={`${nutri.years_of_experience || 0} años`} />
-          {nutri.compatibility != null && (
-            <ProfileField label="Compatibilidad" value={`${Math.round(nutri.compatibility)}%`} />
-          )}
+          <ProfileField label="Disponibilidad" value={nutri.availability || "No especificada"} />
+          <ProfileField label="Formación" value={nutri.education || "No especificada"} />
+          <ProfileField label="Especialización" value={nutri.bio || "No especificada"} />
         </section>
 
         {nutri.match_reasons?.length > 0 && (
           <section className="mx-6 mt-6">
             <div className="bg-[#F0FBE8] border border-[#7ECD43] rounded-2xl p-4">
               <h3 className="font-semibold text-base mb-3 text-[#2D2D2D]">
-                ¿Por qué hicieron match?
+                ¿Por qué es tu match?
               </h3>
+              <ul className="flex flex-col gap-2">
+                {nutri.match_reasons.map((reason: string, index: number) => (
+                  <li key={index} className="flex items-center gap-2 text-[#2D2D2D]">
+                    <span className="text-[#7ECD43] font-bold">✔</span>
+                    {reason}
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
         )}
