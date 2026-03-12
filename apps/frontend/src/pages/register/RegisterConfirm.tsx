@@ -5,6 +5,7 @@ import { Button } from "../../components/common/Button";
 import { ReadOnlyField } from "../../components/common/ReadOnlyField";
 import { api } from "../../services/api";
 import { storage } from "../../utils/storage";
+import { useAuth } from "../../hooks/useAuth";
 
 type NutritionistPersonal = {
   fullName: string;
@@ -63,6 +64,7 @@ const displayLabel = (field: string, value: string) =>
 
 const RegisterConfirm: React.FC = () => {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const role = localStorage.getItem("nutrium_role");
   const isDevMock = sessionStorage.getItem("nutrium_dev_mock") === "1";
 
@@ -151,9 +153,24 @@ const RegisterConfirm: React.FC = () => {
           password,
         });
         storage.setToken(token);
-        if (user) storage.setUser(user);
+
+        const userData: any = {
+          ...user,
+          fullName: (user as any).name || user.fullName,
+          role: "nutritionist",
+          licenseNumber: nutriProfessional.matricula,
+          modality: nutriPersonal.modalidad || "online",
+          availability: `${nutriPersonal.horarioDesde} - ${nutriPersonal.horarioHasta}`,
+          education: nutriPersonal.formacion || "",
+          specialization: nutriPersonal.especializacion || "",
+          country: nutriProfessional.pais || "",
+          city: nutriProfessional.ciudad || "",
+          qualifyingDegree: nutriProfessional.tituloHabilitante || "",
+        };
+        authLogin(userData);
 
         // 2. Crear perfil de nutricionista
+        const photo = safeParse<{ dataUrl: string }>("nutrium_register_photo");
         const profilePayload = {
           license_number: nutriProfessional.matricula,
           bio: nutriPersonal.especializacion || "Nutricionista profesional",
@@ -162,6 +179,7 @@ const RegisterConfirm: React.FC = () => {
           country: nutriProfessional.pais,
           city: nutriProfessional.ciudad,
           tag_ids: nutriProfessional.tagIds || [],
+          ...(photo?.dataUrl ? { profile_picture_url: photo.dataUrl } : {}),
         };
         console.log("[RegisterConfirm] Profile payload:", profilePayload);
 
@@ -199,8 +217,23 @@ const RegisterConfirm: React.FC = () => {
           password,
         });
         storage.setToken(token);
-        if (user) storage.setUser(user);
 
+        const userData: any = {
+          ...user,
+          fullName: (user as any).name || user.fullName,
+          role: "patient",
+          birthDate: patientPersonal.birthDate || "",
+          country: displayLabel("country", patientPersonal.country),
+          city: patientPersonal.city || "",
+          modality: patientPersonal.modalidad || "",
+          availability: `${patientPersonal.horarioDesde} - ${patientPersonal.horarioHasta}`,
+          goal: patientPersonal.objetivo || "",
+          medicalCondition: patientHealth.condition || "",
+          otherConditionDescription: patientHealth.conditionDetails || "",
+        };
+        authLogin(userData);
+
+        const photo = safeParse<{ dataUrl: string }>("nutrium_register_photo");
         const patientProfilePayload = {
           birth_date: patientPersonal.birthDate,
           gender: "prefiero_no_decir",
@@ -209,6 +242,7 @@ const RegisterConfirm: React.FC = () => {
           modality: patientPersonal.modalidad,
           country: displayLabel("country", patientPersonal.country),
           city: patientPersonal.city,
+          ...(photo?.dataUrl ? { profile_picture: photo.dataUrl } : {}),
         };
         console.log("[RegisterConfirm] Patient profile payload:", patientProfilePayload);
 

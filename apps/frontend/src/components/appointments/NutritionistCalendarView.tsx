@@ -116,7 +116,7 @@ export const NutritionistCalendarView: React.FC = () => {
       />
 
       {/* PRÓXIMOS TURNOS */}
-      <div>
+      {/* <div>
         <label className="text-sm font-medium block mb-2">
           Próximos turnos
         </label>
@@ -141,7 +141,7 @@ export const NutritionistCalendarView: React.FC = () => {
           </div>
         )}
       </div>
-
+ */}
     </section>
   );
 };

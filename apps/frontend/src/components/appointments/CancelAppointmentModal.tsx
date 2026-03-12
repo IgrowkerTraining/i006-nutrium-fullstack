@@ -48,7 +48,7 @@ export const CancelAppointmentModal: React.FC<Props> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-center text-lg font-medium">
-          ¿Deseas cancelar la cita con el nutricionista?
+          ¿Deseas cancelar la cita?
         </h2>
 
         <div className="flex justify-center gap-6 mt-6">

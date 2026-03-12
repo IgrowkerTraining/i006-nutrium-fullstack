@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Notification } from "../../types";
+import { useAuth } from "../../hooks/useAuth";
+import { storage } from "../../utils/storage";
+import { checkForNewNotifications } from "../../services/notificationService";
 
 interface Props {
   isOpen: boolean;
@@ -10,11 +13,13 @@ export const NotificationsModal: React.FC<Props> = ({
   isOpen,
   onClose,
 }) => {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   /* ============================
-     🔒 BLOQUEAR SCROLL
+     BLOQUEAR SCROLL
   ============================ */
   useEffect(() => {
     if (isOpen) {
@@ -31,35 +36,34 @@ export const NotificationsModal: React.FC<Props> = ({
   }, [isOpen]);
 
   /* ============================
-     🔄 SIMULACIÓN BACKEND
+     CARGAR NOTIFICACIONES REALES
   ============================ */
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !user) return;
 
-    // Aquí irá tu fetch real
-    const mockData: Notification[] = [
-      {
-        id: "1",
-        type: "info",
-        message: "Hoy tienes una cita conmigo, no lo olvides",
-        read: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        type: "error",
-        message: "Laura canceló tu cita",
-        read: false,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    const token = storage.getToken();
+    if (!token) return;
 
-    setNotifications(mockData);
-  }, [isOpen]);
+    setLoading(true);
+    checkForNewNotifications(token, user.id, user.role)
+      .then((notifs) => setNotifications(notifs))
+      .catch(() => setNotifications([]))
+      .finally(() => setLoading(false));
+  }, [isOpen, user]);
+
+  /* ============================
+     ELIMINAR UNA NOTIFICACIÓN
+  ============================ */
+  const handleDismiss = (notifId: string) => {
+    const updated = notifications.filter((n) => n.id !== notifId);
+    setNotifications(updated);
+    // También actualizar localStorage para que no vuelva a aparecer
+    if (user) {
+      storage.setNotifications(user.id, updated);
+    }
+  };
 
   if (!isOpen) return null;
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div
@@ -74,9 +78,11 @@ export const NotificationsModal: React.FC<Props> = ({
           ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}
         `}
       >
-        {/*   */}
-
-        {notifications.length === 0 ? (
+        {loading ? (
+          <p className="text-sm text-slate-500 text-center py-6">
+            Cargando notificaciones...
+          </p>
+        ) : notifications.length === 0 ? (
           <p className="text-sm text-slate-500 text-center py-6">
             No tienes notificaciones.
           </p>
@@ -98,11 +104,7 @@ export const NotificationsModal: React.FC<Props> = ({
               </div>
 
               <button
-                onClick={() =>
-                  setNotifications(prev =>
-                    prev.filter(n => n.id !== notification.id)
-                  )
-                }
+                onClick={() => handleDismiss(notification.id)}
                 className="text-slate-400"
               >
                 ✕

@@ -3,14 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ProfileField } from "../components/profile/ProfileField";
 import { Button } from "../components/common/Button";
 import AppointmentModal from "../components/common/AppointmentModal";
-import nutricionistaDefault from "../assets/nutricionista.png";
+import noVerificado from "../assets/estado=noVerificado.png"
+import verificado from "../assets/estado=verificado.png"
 
-// TODO: Añadir los elementos reales del diseño, esta hecho solo de paso.
+// TODO: Añadir los elementos reales del diseño, esta hecho solo lo básico.
 
 const PerfilesMatchNutri: React.FC = () => {
   const { state: nutri } = useLocation();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+
+   const isLicenseVerified = (license: string) => /^[A-Za-z]{2}\d{4}$/.test(license);
 
   if (!nutri) {
     return <p className="p-6">No se encontró información del nutricionista.</p>;
@@ -23,16 +26,23 @@ const PerfilesMatchNutri: React.FC = () => {
           <h2 className="text-xl font-semibold text-left">
             Perfil del Nutricionista
           </h2>
-          <p className="text-sm text-red-500 font-bold">** Diseño no definitivo **</p>
         </section>
 
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
 
         <section className="flex justify-center mx-6 my-[clamp(43px,10.94vw,80px)]">
-          <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center">
-            <span className="text-6xl text-slate-400">
-              {(nutri.user?.name)?.charAt(0)?.toUpperCase() || "?"}
-            </span>
+          <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center relative overflow-hidden">
+            {nutri.profile_picture_url ? (
+              <img src={nutri.profile_picture_url} alt={nutri.user?.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-6xl text-slate-400">
+                {(nutri.user?.name)?.charAt(0)?.toUpperCase() || "?"}
+              </span>
+            )}
+            <img className="absolute top-2 right-2 w-12 h-12"
+                  src={isLicenseVerified(nutri.license_number) ? verificado : noVerificado}
+                  alt={isLicenseVerified(nutri.license_number) ? "verificado" : "no verificado"}
+                />
           </div>
         </section>
 

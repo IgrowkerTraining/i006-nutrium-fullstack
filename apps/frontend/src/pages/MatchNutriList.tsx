@@ -12,6 +12,7 @@ import AppLayout from "../components/layout/AppLayout";
 import verificado from "../assets/estado=Verificado.png"
 import noVerificado from "../assets/estado=noVerificado.png"
 import { useNavigate, useLocation } from "react-router-dom";
+import nutriBusca from "../assets/nutri_busca.png"
 
 //Datos hardcodeados para pruebas
 const mockNutricionistas = [
@@ -47,14 +48,21 @@ const MatchNutriList: React.FC = () => {
   const [nutricionistas, setNutricionistas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiFailed, setAiFailed] = useState(false);
   const [showModal, setShowModal] = useState<string | null>(null); // nutritionist_id o null
   const token = storage.getToken();
   const user = storage.getUser();
   const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
   // Prioridad: datos reales (IA o backend) → mocks como último recurso
   const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
+  const hasAnyCompatibility = displayNutricionistas.some(
+    (n: any) => n.compatibility != null && n.compatibility > 0
+  );
+  const showAiFallback = aiFailed || !hasAnyCompatibility;
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isLicenseVerified = (license: string) => /^[A-Za-z]{2}\d{4}$/.test(license);
 
   const mapMatches = (matches: any[]) =>
     matches.map((m: any) => ({
@@ -115,6 +123,7 @@ const MatchNutriList: React.FC = () => {
     const fallbackNutris = (location.state as any)?.fallbackNutritionists;
     if (fallbackNutris && fallbackNutris.length > 0) {
       setNutricionistas(fallbackNutris);
+      setAiFailed(true);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
       return;
     }
@@ -135,16 +144,20 @@ const MatchNutriList: React.FC = () => {
     }
     setLoading(true);
     api.getPatientRecommendations(token, user.id)
-      .then((matches) => {
+      .then(async (matches) => {
         if (matches.length > 0) {
           const mapped = mapMatches(matches);
           setNutricionistas(mapped);
           sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
           enrichMatches(mapped);
+        } else {
+          setAiFailed(true);
+          await fetchBackendFallback();
         }
       })
       .catch(async (err) => {
         console.warn("[MatchNutriList] IA no disponible, intentando backend:", err.message);
+        setAiFailed(true);
         try {
           await fetchBackendFallback();
         } catch (backendErr) {
@@ -168,19 +181,38 @@ const MatchNutriList: React.FC = () => {
         </div>
       )}
 
+      {showAiFallback && (
+        <div className="text-center">
+          <p className="text-[0.85em] mb-1 text-[#FF3131]">
+            No se ha encontrado ningún nutricionista basado en tu perfil.
+          </p>
+          <img src={nutriBusca} alt="nutri está buscando" className="mx-auto w-48 h-48 mt-2 mb-4" />
+          <p className="text-[0.85em] leading-[1.4em] mb-4 border-b border-[#7ECD43] pb-2">
+            Recomendamos nutricionistas más populares.
+          </p>
+        </div>
+      )}
+
       {displayNutricionistas.map((n: any) => (
         <div key={n.id} onClick={() => navigate(`/perfiles-match-nutri/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
-            <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl font-bold text-slate-400">
-                {n.user?.name?.charAt(0)?.toUpperCase() || "?"}
-              </span>
+            <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {n.profile_picture_url ? (
+                <img src={n.profile_picture_url} alt={n.user?.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-slate-400">
+                  {n.user?.name?.charAt(0)?.toUpperCase() || "?"}
+                </span>
+              )}
             </div>
             <article>
               <h3 className="font-semibold text-[1.125em] leading-[1.625em]">Dra./Dr. {n.user?.name || "Sin nombre"}</h3>
               <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">{n.bio || "Nutricionista"}</p>
               <div className="flex gap-3 items-center my-2">
-                <img src={noVerificado} alt="no verificado" />
+                <img
+                  src={isLicenseVerified(n.license_number) ? verificado : noVerificado}
+                  alt={isLicenseVerified(n.license_number) ? "verificado" : "no verificado"}
+                />
                 <p className="text-[#6B7280] text-[0.875em] leading-[1.375em]">Matrícula: {n.license_number}</p>
               </div>
               {n.compatibility != null && (

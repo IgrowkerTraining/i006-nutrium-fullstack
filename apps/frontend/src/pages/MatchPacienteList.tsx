@@ -36,6 +36,33 @@ const MatchPacienteList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [pacientes, setPacientes] = useState<any[]>([]);
+  const [hideButtonIds, setHideButtonIds] = useState<Set<string>>(new Set());
+
+  // Ocultar botón solo si el paciente NO tiene ninguna cita pending
+  useEffect(() => {
+    const token = storage.getToken();
+    if (!token) return;
+
+    api.getMyCalendar(token)
+      .then((appointments) => {
+        const hasPending = new Set<string>();
+        const allPatientIds = new Set<string>();
+        (appointments || []).forEach((a: any) => {
+          if (!a.patient) return;
+          allPatientIds.add(a.patient.id);
+          if (a.status === "pending") {
+            hasPending.add(a.patient.id);
+          }
+        });
+        // Ocultar botón para pacientes que tienen citas pero ninguna pending
+        const hide = new Set<string>();
+        allPatientIds.forEach((id) => {
+          if (!hasPending.has(id)) hide.add(id);
+        });
+        setHideButtonIds(hide);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // 1. Si la pantalla de carga trajo pacientes del backend
@@ -124,7 +151,9 @@ const MatchPacienteList: React.FC = () => {
               </article>
             </div>
           </div>
-            <Button className="w-[90%] mx-auto mb-4">Aceptar cita</Button>
+            {!hideButtonIds.has(p.id) && (
+              <Button className="w-[90%] mx-auto mb-4">Aceptar cita</Button>
+            )}
         </div>
       ))}
     </AppLayout>

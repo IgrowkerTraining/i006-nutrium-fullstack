@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/nutrium-logo.svg";
 import arrow from "../../assets/backArrow.svg";
@@ -6,6 +6,12 @@ import menuIcon from "../../assets/notification.svg"; // 3 líneas
 
 import { ProfileMenuModal } from "../modals/ProfileMenuModal";
 import { NotificationsModal } from "../modals/NotificationsModals";
+import { useAuth } from "../../hooks/useAuth";
+import { storage } from "../../utils/storage";
+import { checkForNewNotifications } from "../../services/notificationService";
+
+import campanita from "../../assets/campanita.png"
+import campanitaNoti from "../../assets/campanita_notificacion.png"
 
 interface HeaderNavProps {
   showBack?: boolean;
@@ -15,8 +21,21 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ showBack }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
+
+  // Al cargar la página: verificar si hay cambios en citas y actualizar el icono
+  useEffect(() => {
+    if (!user || isNotificationsOpen) return;
+    const token = storage.getToken();
+    if (!token) return;
+
+    checkForNewNotifications(token, user.id, user.role).then((notifs) => {
+      setHasNotifications(notifs.length > 0);
+    });
+  }, [user, isNotificationsOpen]);
 
   const isProfile = location.pathname === "/perfil";
   const isMatchOrCalendar =
@@ -60,13 +79,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ showBack }) => {
 
         {isMatchOrCalendar && (
           <button onClick={() => setIsNotificationsOpen(true)} aria-label="Notificaciones">
-            <svg
-              viewBox="0 0 23 28"
-              className="w-[clamp(20px,6.5vw,32px)] h-auto"
-              fill="#6B7280"
-            >
-              <path d="M11.3333 27.625C12.8917 27.625 14.1667 26.35 14.1667 24.7917H8.5C8.5 25.5431 8.79851 26.2638 9.32986 26.7951C9.86122 27.3265 10.5819 27.625 11.3333 27.625ZM19.8333 19.125V12.0417C19.8333 7.6925 17.51 4.05167 13.4583 3.08833V2.125C13.4583 0.949167 12.5092 0 11.3333 0C10.1575 0 9.20833 0.949167 9.20833 2.125V3.08833C5.1425 4.05167 2.83333 7.67833 2.83333 12.0417V19.125L0 21.9583V23.375H22.6667V21.9583L19.8333 19.125Z" />
-            </svg>
+            <img
+              src={hasNotifications ? campanitaNoti : campanita}
+              alt="Notificaciones"
+              className="w-[clamp(28px,8vw,40px)] h-auto"
+            />
           </button>
         )}
       </header>
