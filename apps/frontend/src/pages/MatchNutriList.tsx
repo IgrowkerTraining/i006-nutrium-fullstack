@@ -196,10 +196,14 @@ const MatchNutriList: React.FC = () => {
       {displayNutricionistas.map((n: any) => (
         <div key={n.id} onClick={() => navigate(`/perfiles-match-nutri/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
-            <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl font-bold text-slate-400">
-                {n.user?.name?.charAt(0)?.toUpperCase() || "?"}
-              </span>
+            <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {n.profile_picture_url ? (
+                <img src={n.profile_picture_url} alt={n.user?.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-slate-400">
+                  {n.user?.name?.charAt(0)?.toUpperCase() || "?"}
+                </span>
+              )}
             </div>
             <article>
               <h3 className="font-semibold text-[1.125em] leading-[1.625em]">Dra./Dr. {n.user?.name || "Sin nombre"}</h3>

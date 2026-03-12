@@ -31,10 +31,14 @@ const PerfilesMatchNutri: React.FC = () => {
         <hr className="w-screen border-t-1 border-[#7ECD43] my-4" />
 
         <section className="flex justify-center mx-6 my-[clamp(43px,10.94vw,80px)]">
-          <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center relative">
-            <span className="text-6xl text-slate-400">
-              {(nutri.user?.name)?.charAt(0)?.toUpperCase() || "?"}
-            </span>
+          <div className="w-[clamp(260px,85vw,600px)] aspect-[334/293] rounded-xl bg-slate-100 flex items-center justify-center relative overflow-hidden">
+            {nutri.profile_picture_url ? (
+              <img src={nutri.profile_picture_url} alt={nutri.user?.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-6xl text-slate-400">
+                {(nutri.user?.name)?.charAt(0)?.toUpperCase() || "?"}
+              </span>
+            )}
             <img className="absolute top-2 right-2 w-12 h-12"
                   src={isLicenseVerified(nutri.license_number) ? verificado : noVerificado}
                   alt={isLicenseVerified(nutri.license_number) ? "verificado" : "no verificado"}

@@ -50,6 +50,8 @@ const Perfil: React.FC = () => {
             goal: p.health_goals || "",
             medicalCondition: p.medical_condition || "",
             otherConditionDescription: p.other_condition_description || "",
+            profilePicture: p.profile_picture || "",
+            avatarUrl: p.profile_picture || "",
           };
         } else {
           updatedUser = {
@@ -65,6 +67,8 @@ const Perfil: React.FC = () => {
             country: p.country || "",
             city: p.city || "",
             qualifyingDegree: "",
+            profilePicture: p.profile_picture_url || "",
+            avatarUrl: p.profile_picture_url || "",
           };
         }
         login(updatedUser);
@@ -112,6 +116,7 @@ const Perfil: React.FC = () => {
           modality: formData.modality,
           country: formData.country,
           city: formData.city,
+          ...(formData.profilePicture ? { profile_picture: formData.profilePicture } : {}),
         });
       } else {
         await api.createNutritionistProfile(token, {
@@ -122,6 +127,7 @@ const Perfil: React.FC = () => {
           country: formData.country,
           city: formData.city,
           tag_ids: formData.tagIds?.length ? formData.tagIds : [1],
+          ...(formData.profilePicture ? { profile_picture_url: formData.profilePicture } : {}),
         });
       }
 

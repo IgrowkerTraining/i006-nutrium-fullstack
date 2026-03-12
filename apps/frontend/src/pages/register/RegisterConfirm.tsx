@@ -154,6 +154,7 @@ const RegisterConfirm: React.FC = () => {
         if (user) storage.setUser(user);
 
         // 2. Crear perfil de nutricionista
+        const photo = safeParse<{ dataUrl: string }>("nutrium_register_photo");
         const profilePayload = {
           license_number: nutriProfessional.matricula,
           bio: nutriPersonal.especializacion || "Nutricionista profesional",
@@ -162,6 +163,7 @@ const RegisterConfirm: React.FC = () => {
           country: nutriProfessional.pais,
           city: nutriProfessional.ciudad,
           tag_ids: nutriProfessional.tagIds || [],
+          ...(photo?.dataUrl ? { profile_picture_url: photo.dataUrl } : {}),
         };
         console.log("[RegisterConfirm] Profile payload:", profilePayload);
 
@@ -201,6 +203,7 @@ const RegisterConfirm: React.FC = () => {
         storage.setToken(token);
         if (user) storage.setUser(user);
 
+        const photo = safeParse<{ dataUrl: string }>("nutrium_register_photo");
         const patientProfilePayload = {
           birth_date: patientPersonal.birthDate,
           gender: "prefiero_no_decir",
@@ -209,6 +212,7 @@ const RegisterConfirm: React.FC = () => {
           modality: patientPersonal.modalidad,
           country: displayLabel("country", patientPersonal.country),
           city: patientPersonal.city,
+          ...(photo?.dataUrl ? { profile_picture: photo.dataUrl } : {}),
         };
         console.log("[RegisterConfirm] Patient profile payload:", patientProfilePayload);
 
