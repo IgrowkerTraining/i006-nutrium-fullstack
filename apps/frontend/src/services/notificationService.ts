@@ -108,18 +108,28 @@ export async function checkForNewNotifications(
   if (isFirstTime) {
     const now = new Date().toISOString();
     const firstTimeNotifs: Notification[] = currentAppts
-      .filter((a) => a.status === "pending" || a.status === "confirmed")
+      .filter((a) => a.status === "pending" || a.status === "confirmed" || a.status === "cancelled")
       .map((appt) => {
         const otherName =
           userRole === "patient" ? appt.nutritionist.name : appt.patient.name;
         const fecha = formatDate(appt.appointment_date);
-        const message =
-          appt.status === "confirmed"
-            ? `${otherName} confirmó la cita del ${fecha}.`
-            : `Nueva cita con ${otherName} el ${fecha}.`;
+        let message: string;
+        let id: string;
+        let type: "info" | "error" = "info";
+        if (appt.status === "cancelled") {
+          message = `${otherName} canceló la cita del ${fecha}.`;
+          id = `cancel-${appt.id}`;
+          type = "error";
+        } else if (appt.status === "confirmed") {
+          message = `${otherName} confirmó la cita del ${fecha}.`;
+          id = `confirm-${appt.id}`;
+        } else {
+          message = `Nueva cita con ${otherName} el ${fecha}.`;
+          id = `new-${appt.id}`;
+        }
         return {
-          id: appt.status === "confirmed" ? `confirm-${appt.id}` : `new-${appt.id}`,
-          type: "info" as const,
+          id,
+          type,
           message,
           read: false,
           createdAt: now,
