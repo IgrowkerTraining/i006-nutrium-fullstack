@@ -177,17 +177,19 @@ class AppointmentService {
     }
 
     // 4. Verificar que la cita quepa completamente dentro de al menos un slot.
-    //    Normalización estricta a HH:mm:ss: si el valor llega como HH:mm
-    //    (longitud 5) se concatena ':00' para garantizar comparación lexicográfica
-    //    uniforme contra los valores HH:mm:ss almacenados en la BD.
-    const normalizedStart =
-      startTime.length === 5 ? `${startTime}:00` : startTime;
-    const normalizedEnd = endTime.length === 5 ? `${endTime}:00` : endTime;
+    //    — Los parámetros startTime/endTime ya llegan normalizados a HH:mm:ss
+    //      por normalizeTime() en createAppointment; la línea extra es defensa
+    //      en profundidad por si el método se llama desde otro contexto.
+    //    — slot.start_time/end_time se truncan a 8 chars para descartar posibles
+    //      microsegundos que el driver de pg pueda añadir ("HH:mm:ss.nnnnnn").
+    const reqStart = startTime.length === 5 ? `${startTime}:00` : startTime;
+    const reqEnd   = endTime.length === 5   ? `${endTime}:00`   : endTime;
 
-    const fits = slots.some(
-      (slot) =>
-        normalizedStart >= slot.start_time && normalizedEnd <= slot.end_time,
-    );
+    const fits = slots.some((slot) => {
+      const slotStart = String(slot.start_time).substring(0, 8);
+      const slotEnd   = String(slot.end_time).substring(0, 8);
+      return reqStart >= slotStart && reqEnd <= slotEnd;
+    });
 
     if (!fits) {
       const error = new Error(
