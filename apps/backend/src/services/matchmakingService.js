@@ -217,7 +217,12 @@ class MatchmakingService {
     } catch (err) {
       // Re-lanzar errores controlados (statusCode ya asignado)
       if (err.statusCode) throw err;
-      // Error de red / conexión rechazada
+      // Error de red / conexión rechazada (ECONNREFUSED = Python está caído)
+      if (err.code === 'ECONNREFUSED') {
+        console.error(`[MatchmakingService] ECONNREFUSED al llamar a ${endpoint} — ¿está corriendo el servicio Python en AI_SERVICE_URL=${process.env.AI_SERVICE_URL}?`);
+      } else {
+        console.error('[MatchmakingService] Error de red inesperado al llamar al servicio de IA:', err.message);
+      }
       const error = new Error(
         "No se pudo conectar con el servicio de recomendaciones. Intente nuevamente.",
       );

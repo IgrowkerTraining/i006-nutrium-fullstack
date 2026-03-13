@@ -133,13 +133,25 @@ const MatchNutriList: React.FC = () => {
     const cached = sessionStorage.getItem("nutrium_matches");
     if (cached) {
       try {
+        console.log('[MatchNutriList] Usando datos cacheados de sessionStorage (no se llama a la IA)');
         setNutricionistas(JSON.parse(cached));
         return;
       } catch { /* ignorar cache corrupto */ }
     }
 
     // 4. Acceso directo a esta URL: IA → Backend → Mocks
-    if (!hasRealSession || !token || !user?.id) {
+    if (!hasRealSession) {
+      console.error('[MatchNutriList] No hay sesión real activa, se omite la llamada a la IA.');
+      setLoading(false);
+      return;
+    }
+    if (!token) {
+      console.error('[MatchNutriList] Falta el token de autenticación, no se puede consultar a la IA.');
+      setLoading(false);
+      return;
+    }
+    if (!user?.id) {
+      console.error('[MatchNutriList] Falta el ID del paciente, no se puede consultar a la IA.');
       setLoading(false);
       return;
     }
