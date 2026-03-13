@@ -4,7 +4,7 @@ import { ProfileField } from "../components/profile/ProfileField";
 import { Button } from "../components/common/Button";
 import AppointmentModal from "../components/common/AppointmentModal";
 import noVerificado from "../assets/estado=noVerificado.png"
-import verificado from "../assets/estado=verificado.png"
+import verificado from "../assets/estado=Verificado.png"
 
 // TODO: Añadir los elementos reales del diseño, esta hecho solo lo básico.
 
