@@ -162,19 +162,6 @@ const MatchNutriList: React.FC = () => {
         </div>
       )}
 
-      {error && (
-        <div className="mx-4 mb-4 bg-red-50 border border-red-300 text-red-700 text-sm p-4 rounded-lg">
-          <p className="font-semibold mb-1">Error al cargar los datos</p>
-          <p>{error}</p>
-          <button
-            className="mt-2 underline text-red-600 text-xs"
-            onClick={() => { setError(null); window.location.reload(); }}
-          >
-            Reintentar
-          </button>
-        </div>
-      )}
-
       {!hasRealSession && (
         <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg">
           Necesitas iniciar sesión real para ver recomendaciones.
