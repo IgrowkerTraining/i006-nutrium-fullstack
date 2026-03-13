@@ -242,6 +242,7 @@ export const api = {
 
   async getPatientRecommendations(token: string, patientUserId: string): Promise<any[]> {
     if (useMocks) {
+      console.log('⚠️ ADVERTENCIA: Usando Mocks para recomendaciones (Array vacío)');
       return [];
     }
     const url = `${API_ENDPOINTS.BASE}/patients/${patientUserId}/recommendations`;

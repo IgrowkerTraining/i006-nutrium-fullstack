@@ -109,6 +109,7 @@ const MatchNutriList: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 Iniciando fetch de matches...');
     // 1. Si la pantalla de carga trajo matches de IA, usarlos
     const stateMatches = (location.state as any)?.matches;
     if (stateMatches && stateMatches.length > 0) {
@@ -145,6 +146,7 @@ const MatchNutriList: React.FC = () => {
     setLoading(true);
     api.getPatientRecommendations(token, user.id)
       .then(async (matches) => {
+        console.log('📦 Datos recibidos de la API:', matches);
         if (matches.length > 0) {
           const mapped = mapMatches(matches);
           setNutricionistas(mapped);
@@ -198,6 +200,18 @@ const MatchNutriList: React.FC = () => {
       {!hasRealSession && (
         <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg">
           Necesitas iniciar sesión real para ver recomendaciones.
+        </div>
+      )}
+
+      {!loading && !error && hasRealSession && nutricionistas.length === 0 && (
+        <div className="mx-4 mt-8 flex flex-col items-center text-center gap-3">
+          <img src={nutriBusca} alt="sin resultados" className="w-40 h-40 opacity-70" />
+          <p className="text-[1em] font-semibold text-gray-600">
+            No se encontraron recomendaciones en este momento.
+          </p>
+          <p className="text-[0.875em] text-gray-500">
+            Revisa tu perfil o intenta más tarde.
+          </p>
         </div>
       )}
 
