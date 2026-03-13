@@ -371,6 +371,7 @@ export const api = {
       return { success: true, message: "Mock appointment created", data: { appointment: { id: "mock-apt-1", ...data } } };
     }
     const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.APPOINTMENTS.BASE}`;
+    console.log('📦 Payload enviado a la cita:', data);
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -381,7 +382,14 @@ export const api = {
     });
     const result = await readJsonSafely(response);
     if (!response.ok) {
-      throw new Error(result?.message || "Error al agendar la cita");
+      // Surface field-level errors from the backend (e.g. missing/invalid fields)
+      const fieldErrors: string[] = result?.data?.errors
+        ? (Array.isArray(result.data.errors)
+            ? result.data.errors.map((e: any) => typeof e === 'string' ? e : `${e.field}: ${e.message}`)
+            : [String(result.data.errors)])
+        : [];
+      const detail = fieldErrors.length ? ` (${fieldErrors.join(', ')})` : '';
+      throw new Error((result?.message || "Error al agendar la cita") + detail);
     }
     return result;
   },

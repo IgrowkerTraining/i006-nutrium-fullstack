@@ -18,6 +18,18 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ nutritionistId, onC
 
   const token = storage.getToken();
 
+  /**
+   * Converts a naive local date+time (from HTML inputs) to a UTC time string
+   * "HH:mm:ss". The backend compares appointment times against Date.now() in
+   * UTC, so we must send UTC-normalised times to avoid timezone-drift 400s.
+   */
+  const toUtcTimeStr = (dateStr: string, timeStr: string): string => {
+    const local = new Date(`${dateStr}T${timeStr}`);
+    const hh = String(local.getUTCHours()).padStart(2, "0");
+    const mm = String(local.getUTCMinutes()).padStart(2, "0");
+    return `${hh}:${mm}:00`;
+  };
+
   const handleConfirm = async () => {
     if (!token || !aptDate) return;
     setAptLoading(true);
@@ -26,8 +38,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ nutritionistId, onC
       await api.createAppointment(token, {
         nutritionist_id: nutritionistId,
         appointment_date: aptDate,
-        start_time: aptStart,
-        end_time: aptEnd,
+        start_time: toUtcTimeStr(aptDate, aptStart),
+        end_time: toUtcTimeStr(aptDate, aptEnd),
         notes: aptNotes || undefined,
       });
       setAptMsg("Cita agendada exitosamente");

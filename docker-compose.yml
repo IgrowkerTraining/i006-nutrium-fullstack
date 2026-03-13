@@ -10,6 +10,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - TZ=America/Argentina/Buenos_Aires
     volumes:
       - ./apps/backend:/app
       - /app/node_modules

@@ -57,12 +57,25 @@ class AppointmentService {
    * Valida que la combinación de fecha y hora de inicio sea estrictamente
    * futura respecto al momento actual.
    *
+   * IMPORTANTE — Manejo de timezone:
+   *   Los campos `appointment_date` y `start_time` llegan como strings
+   *   naive (sin offset).  Para comparar correctamente contra "ahora"
+   *   se construye el timestamp de la cita descomponiendo las partes
+   *   numéricas y usando Date.UTC(), de modo que la comparación es
+   *   siempre en UTC puro, independientemente del TZ del servidor.
+   *   El frontend debe enviar los horarios en UTC (ver AppointmentModal.tsx).
+   *
    * @param {string} dateString   YYYY-MM-DD  (ya normalizado)
    * @param {string} timeString   HH:mm:ss    (ya normalizado)
    */
   validateFutureDate(dateString, timeString) {
-    const appointmentDateTime = new Date(`${dateString}T${timeString}`);
-    if (appointmentDateTime <= new Date()) {
+    // Descomponemos las partes para construir un timestamp UTC explícito,
+    // evitando que `new Date(string)` lo parsee como hora local del servidor.
+    const [year, month, day] = dateString.split("-").map(Number);
+    const [hour, minute, second] = timeString.split(":").map(Number);
+    const appointmentUTC = Date.UTC(year, month - 1, day, hour, minute, second || 0);
+
+    if (appointmentUTC <= Date.now()) {
       const error = new Error(
         "La fecha y hora de la cita deben ser en el futuro",
       );
