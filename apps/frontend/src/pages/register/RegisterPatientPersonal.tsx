@@ -269,32 +269,6 @@ const RegisterPatientPersonal: React.FC = () => {
           Continuar
         </Button>
 
-        {/* Botón para DEV */}
-        {import.meta.env.DEV && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              localStorage.setItem("nutrium_role", "patient");
-              localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                fullName: "Test Paciente",
-                birthDate: "1990-01-01",
-                country: "AR",
-                city: "Córdoba",
-                email: "paciente@test.com",
-                modalidad: "online",
-                disponibilidad: "manana",
-                objetivo: "bajar peso",
-              }));
-              navigate("/register/patient/health");
-            }}
-          >
-            [DEV] Skip
-          </Button>
-        )}
-
-
         <p className="text-center text-sm text-slate-500">
           ¿Ya tienes cuenta?{" "}
           <Link to="/login" className="text-[#7ECD43] font-medium hover:underline">

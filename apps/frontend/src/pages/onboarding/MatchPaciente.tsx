@@ -10,7 +10,7 @@ const Match: React.FC = () => {
   const navigate = useNavigate();
   const token = storage.getToken();
   const user = storage.getUser();
-  const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
+  const hasRealSession = Boolean(token && user?.id);
 
   useEffect(() => {
     const minDelay = new Promise((resolve) => setTimeout(resolve, 3000));
@@ -41,7 +41,7 @@ const Match: React.FC = () => {
             const nutritionists = await api.getNutritionists();
             navigate("/match/nutri-list", { state: { fallbackNutritionists: nutritionists } });
           } catch {
-            navigate("/match/nutri-list");
+            navigate("/match/nutri-list", { state: { serviceUnavailable: true } });
           }
         });
     } else {

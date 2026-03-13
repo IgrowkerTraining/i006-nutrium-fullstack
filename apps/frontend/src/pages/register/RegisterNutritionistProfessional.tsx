@@ -180,28 +180,6 @@ const RegisterNutritionistProfessional: React.FC = () => {
           Confirmar
         </Button>
 
-        {/* Botón para DEV */}
-        {import.meta.env.DEV && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                matricula: "MB7854",
-                pais: "AR",
-                ciudad: "Buenos Aires",
-                tituloHabilitante: "Lic. en Nutrición",
-                anosExperiencia: "5",
-                tagIds: [1],
-              }));
-              navigate("/register/photo");
-            }}
-          >
-            [DEV] Skip
-          </Button>
-        )}
-
         <Button
           type="button"
           variant="secondary"

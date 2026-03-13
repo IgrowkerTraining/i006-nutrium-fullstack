@@ -5,7 +5,6 @@ import { storage } from "../utils/storage";
 import modalidad from "../assets/Modalidad.png";
 import disponibilidad from "../assets/Disponibilidad.png";
 import cerrar from "../assets/Cerrar.png";
-import nutricionista from "../assets/nutricionista.png";
 import { Button } from "../components/common/Button";
 import AppointmentModal from "../components/common/AppointmentModal";
 import AppLayout from "../components/layout/AppLayout";
@@ -14,51 +13,20 @@ import noVerificado from "../assets/estado=noVerificado.png"
 import { useNavigate, useLocation } from "react-router-dom";
 import nutriBusca from "../assets/nutri_busca.png"
 
-//Datos hardcodeados para pruebas
-const mockNutricionistas = [
-  {
-    id: "mock-n1",
-    user: { name: "Laura Gonzalez" },
-    bio: "Nutrición clínica",
-    license_number: "MP 4597",
-    modality: "Virtual",
-    years_of_experience: 5,
-    profile_picture_url: nutricionista,
-    tags: [
-      { id: "mock-t1", name: "Nutrición clínica" },
-      { id: "mock-t2", name: "Pérdida de peso" },
-    ],
-    compatibility: 78,
-  },
-  {
-    id: "mock-n2",
-    user: { name: "Maria Acosta" },
-    bio: "Nutrición deportiva",
-    license_number: "MP 1234",
-    modality: "Presencial",
-    years_of_experience: 3,
-    profile_picture_url: nutricionista,
-    tags: [{ id: "mock-t3", name: "Deportiva" }],
-    compatibility: 92,
-  },
-];
-
 
 const MatchNutriList: React.FC = () => {
   const [nutricionistas, setNutricionistas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [aiFailed, setAiFailed] = useState(false);
-  const [showModal, setShowModal] = useState<string | null>(null); // nutritionist_id o null
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
+  const [showModal, setShowModal] = useState<string | null>(null);
   const token = storage.getToken();
   const user = storage.getUser();
-  const hasRealSession = Boolean(token && token !== "mock-token" && user?.id);
-  // Prioridad: datos reales (IA o backend) → mocks como último recurso
-  const displayNutricionistas = nutricionistas.length > 0 ? nutricionistas : (mockNutricionistas as any);
-  const hasAnyCompatibility = displayNutricionistas.some(
+  const hasRealSession = Boolean(token && user?.id);
+  const hasAnyCompatibility = nutricionistas.some(
     (n: any) => n.compatibility != null && n.compatibility > 0
   );
-  const showAiFallback = aiFailed || !hasAnyCompatibility;
+  const showAiFallback = nutricionistas.length > 0 && (aiFailed || !hasAnyCompatibility);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -76,7 +44,6 @@ const MatchNutriList: React.FC = () => {
       compatibility: m.compatibility_score ?? 0,
     }));
 
-  // Fallback al backend: carga nutricionistas reales sin compatibilidad IA
   const fetchBackendFallback = async () => {
     const nutritionists = await api.getNutritionists();
     if (nutritionists.length > 0) {
@@ -85,7 +52,6 @@ const MatchNutriList: React.FC = () => {
     }
   };
 
-  // Enriquecer matches de IA con datos del backend (matrícula, modalidad, foto)
   const enrichMatches = async (mapped: any[]) => {
     try {
       const fullList = await api.getNutritionists();
@@ -133,7 +99,14 @@ const MatchNutriList: React.FC = () => {
       return;
     }
 
-    // 3. Si hay datos cacheados (volviendo de un perfil), usarlos
+    // 3. Si la pantalla de carga indicó que el servicio no está disponible
+    const stateServiceUnavailable = (location.state as any)?.serviceUnavailable;
+    if (stateServiceUnavailable) {
+      setServiceUnavailable(true);
+      return;
+    }
+
+    // 4. Si hay datos cacheados (volviendo de un perfil), usarlos
     const cached = sessionStorage.getItem("nutrium_matches");
     if (cached) {
       try {
@@ -143,19 +116,8 @@ const MatchNutriList: React.FC = () => {
       } catch { /* ignorar cache corrupto */ }
     }
 
-    // 4. Acceso directo a esta URL: IA → Backend → Mocks
-    if (!hasRealSession) {
-      console.warn('⚠️ Early return [4]: hasRealSession es false. token:', token, '| user?.id:', user?.id);
-      setLoading(false);
-      return;
-    }
-    if (!token) {
-      console.warn('⚠️ Early return [5]: token es falsy.', { token });
-      setLoading(false);
-      return;
-    }
-    if (!user?.id) {
-      console.warn('⚠️ Early return [6]: user?.id es falsy.', { user });
+    // 5. Acceso directo a esta URL: IA → Backend → Error
+    if (!hasRealSession || !token || !user?.id) {
       setLoading(false);
       return;
     }
@@ -179,13 +141,13 @@ const MatchNutriList: React.FC = () => {
         try {
           await fetchBackendFallback();
         } catch (backendErr) {
-          console.error("[MatchNutriList] Backend no disponible, se muestran datos de ejemplo:", backendErr);
-          setError("No se pudieron cargar las recomendaciones. Verifica tu conexión o inicia sesión nuevamente.");
+          console.warn("[MatchNutriList] Backend no disponible");
+          setServiceUnavailable(true);
         }
       })
       .finally(() => setLoading(false));
   }, []);
-  
+
   return (
     <AppLayout>
       <article className="pl-4 border-b border-[#7ECD43] pb-2 mt-4">
@@ -219,15 +181,10 @@ const MatchNutriList: React.FC = () => {
         </div>
       )}
 
-      {!loading && !error && hasRealSession && nutricionistas.length === 0 && (
-        <div className="mx-4 mt-8 flex flex-col items-center text-center gap-3">
-          <img src={nutriBusca} alt="sin resultados" className="w-40 h-40 opacity-70" />
-          <p className="text-[1em] font-semibold text-gray-600">
-            No se encontraron recomendaciones en este momento.
-          </p>
-          <p className="text-[0.875em] text-gray-500">
-            Revisa tu perfil o intenta más tarde.
-          </p>
+      {serviceUnavailable && (
+        <div className="mx-4 mb-4 bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg text-center">
+          <p className="font-semibold mb-1">Servicio no disponible</p>
+          <p>En este momento nuestro servicio está fuera de servicio, disculpen las molestias.</p>
         </div>
       )}
 
@@ -243,7 +200,7 @@ const MatchNutriList: React.FC = () => {
         </div>
       )}
 
-      {displayNutricionistas.map((n: any) => (
+      {nutricionistas.map((n: any) => (
         <div key={n.id} onClick={() => navigate(`/perfiles-match-nutri/${n.id}`, { state: n })} className="bg-white shadow-sm border-gray-300 border-b-4 border-x-2 mb-4 mx-4 rounded-2xl">
           <div className="flex items-start justify-between p-4">
             <div className="w-[83px] h-[83px] rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
