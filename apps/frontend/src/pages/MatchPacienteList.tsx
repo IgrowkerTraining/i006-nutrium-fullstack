@@ -44,9 +44,14 @@ const MatchPacienteList: React.FC = () => {
   useEffect(() => {
     // 1. Si la pantalla de carga trajo pacientes del backend
     const statePatients = (location.state as any)?.patients;
-    if (statePatients && statePatients.length > 0) {
-      setPacientes(statePatients);
-      sessionStorage.setItem("nutrium_patient_matches", JSON.stringify(statePatients));
+    if (Array.isArray(statePatients)) {
+      if (statePatients.length > 0) {
+        setPacientes(statePatients);
+        sessionStorage.setItem("nutrium_patient_matches", JSON.stringify(statePatients));
+      } else {
+        // La pantalla de carga confirmó que no hay pacientes — limpiar cache viejo
+        sessionStorage.removeItem("nutrium_patient_matches");
+      }
       return;
     }
 
@@ -109,7 +114,7 @@ const MatchPacienteList: React.FC = () => {
 
       {!serviceUnavailable && pacientes.length === 0 && (
         <div className="mx-4 mb-4 text-center text-slate-500 text-sm p-4">
-          <p>No se encontraron pacientes.</p>
+          <p className="text-[#FF3131]">No se encontraron pacientes.</p>
         </div>
       )}
 

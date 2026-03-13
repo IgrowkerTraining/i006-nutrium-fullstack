@@ -17,9 +17,11 @@ const Perfil: React.FC = () => {
     if (!user || profileLoaded) return;
 
     // Si ya tiene datos de perfil completos, no hacer fetch
+    const a = (user as any).availability;
+    const hasAvailability = Boolean(a && a !== "No especificada");
     const hasProfile = user.role === "patient"
       ? Boolean((user as any).birthDate || (user as any).country)
-      : Boolean((user as any).licenseNumber || (user as any).education);
+      : Boolean(((user as any).licenseNumber || (user as any).education) && hasAvailability);
     if (hasProfile) {
       setProfileLoaded(true);
       return;
@@ -59,7 +61,9 @@ const Perfil: React.FC = () => {
             fullName: user.fullName || (user as any).name || "",
             licenseNumber: p.license_number || "",
             modality: p.modality || "",
-            availability: p.availabilities?.[0] || "Mañana",
+            availability: typeof p.availabilities?.[0] === "object"
+              ? `${p.availabilities[0].start_time?.slice(0, 5)} - ${p.availabilities[0].end_time?.slice(0, 5)}`
+              : p.availabilities?.[0] || "No especificada",
             education: p.bio || "",
             specialization: p.tags?.map((t: any) => t.name).join(", ") || "",
             tagIds: p.tags?.map((t: any) => t.id) || [],

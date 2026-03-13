@@ -49,7 +49,13 @@ const PerfilesMatchNutri: React.FC = () => {
         <section className="flex flex-col gap-4">
           <ProfileField label="Nombre completo" value={`Dra./Dr. ${nutri.user?.name || "Sin nombre"}`} />
           <ProfileField label="Matrícula" value={nutri.license_number || "No disponible"} />
-          <ProfileField label="Disponibilidad" value={nutri.availability || "No especificada"} />
+          <ProfileField label="Disponibilidad" value={
+            nutri.availability
+            || (nutri.availabilities?.[0]?.start_time
+              ? `${nutri.availabilities[0].start_time.slice(0, 5)} - ${nutri.availabilities[0].end_time.slice(0, 5)}`
+              : null)
+            || "No especificada"
+          } />
           <ProfileField label="Formación" value={nutri.education || "No especificada"} />
           <ProfileField label="Especialización" value={nutri.bio || "No especificada"} />
         </section>
