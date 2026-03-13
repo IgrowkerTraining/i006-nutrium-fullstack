@@ -132,6 +132,19 @@ class AppointmentController {
         data: { appointments },
       });
     } catch (error) {
+      console.error(error);
+
+      if (error.name === "SequelizeDatabaseError") {
+        const pgCode = error.original && error.original.code;
+        if (pgCode === "22P02") {
+          return res.status(400).json({
+            success: false,
+            message: "El ID proporcionado tiene un formato inválido",
+            data: { pg_code: pgCode },
+          });
+        }
+      }
+
       const statusCode = error.statusCode || 500;
       const message =
         statusCode < 500 ? error.message : "Error al obtener el calendario";
@@ -164,6 +177,19 @@ class AppointmentController {
         data: { appointment },
       });
     } catch (error) {
+      console.error(error);
+
+      if (error.name === "SequelizeDatabaseError") {
+        const pgCode = error.original && error.original.code;
+        if (pgCode === "22P02") {
+          return res.status(400).json({
+            success: false,
+            message: "El ID proporcionado tiene un formato inválido",
+            data: { pg_code: pgCode },
+          });
+        }
+      }
+
       const statusCode = error.statusCode || 500;
       const message =
         statusCode < 500 ? error.message : "Error al obtener la cita";

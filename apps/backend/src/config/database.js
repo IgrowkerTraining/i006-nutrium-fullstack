@@ -3,16 +3,20 @@ const { Sequelize } = require("sequelize");
 
 // Render (and many PaaS) provides DATABASE_URL as a single connection string.
 // Fall back to individual variables for local dev.
+const isProduction = process.env.NODE_ENV === "production";
+
 const sequelize = process.env.DATABASE_URL
   ? new Sequelize(process.env.DATABASE_URL, {
       dialect: "postgres",
       logging: false,
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false, // Render uses self-signed certs
+      ...(isProduction && {
+        dialectOptions: {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false, // Render uses self-signed certs
+          },
         },
-      },
+      }),
       pool: {
         max: 5,
         min: 0,

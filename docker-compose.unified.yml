@@ -142,7 +142,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_URL=http://localhost:3000/api/v1
       - VITE_AI_SERVICE_URL=http://localhost:8000/api/v1
     volumes:
       - ./apps/frontend/src:/app/src
