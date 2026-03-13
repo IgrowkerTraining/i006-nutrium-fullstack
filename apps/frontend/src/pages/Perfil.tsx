@@ -17,9 +17,11 @@ const Perfil: React.FC = () => {
     if (!user || profileLoaded) return;
 
     // Si ya tiene datos de perfil completos, no hacer fetch
+    const a = (user as any).availability;
+    const hasAvailability = Boolean(a && a !== "No especificada");
     const hasProfile = user.role === "patient"
       ? Boolean((user as any).birthDate || (user as any).country)
-      : Boolean((user as any).licenseNumber || (user as any).education);
+      : Boolean(((user as any).licenseNumber || (user as any).education) && hasAvailability);
     if (hasProfile) {
       setProfileLoaded(true);
       return;
@@ -59,7 +61,9 @@ const Perfil: React.FC = () => {
             fullName: user.fullName || (user as any).name || "",
             licenseNumber: p.license_number || "",
             modality: p.modality || "",
-            availability: p.availabilities?.[0] || "Mañana",
+            availability: typeof p.availabilities?.[0] === "object"
+              ? `${p.availabilities[0].start_time?.slice(0, 5)} - ${p.availabilities[0].end_time?.slice(0, 5)}`
+              : p.availabilities?.[0] || "No especificada",
             education: p.bio || "",
             specialization: p.tags?.map((t: any) => t.name).join(", ") || "",
             tagIds: p.tags?.map((t: any) => t.id) || [],
@@ -129,6 +133,33 @@ const Perfil: React.FC = () => {
           tag_ids: formData.tagIds?.length ? formData.tagIds : [1],
           ...(formData.profilePicture ? { profile_picture_url: formData.profilePicture } : {}),
         });
+
+        // Sincronizar disponibilidad horaria con el backend
+        const avail = formData.availability || "";
+        const timeMap: Record<string, [string, string]> = {
+          "Mañana": ["08:00:00", "13:00:00"],
+          "Tarde": ["13:00:00", "18:00:00"],
+        };
+        let start: string | undefined, end: string | undefined;
+        if (timeMap[avail]) {
+          [start, end] = timeMap[avail];
+        } else if (avail.includes(" - ")) {
+          const [s, e] = avail.split(" - ");
+          start = s.length === 5 ? `${s}:00` : s;
+          end = e.length === 5 ? `${e}:00` : e;
+        }
+        if (start && end) {
+          const weekdaySlots = [1, 2, 3, 4, 5].map((day) => ({
+            day_of_week: day,
+            start_time: start!,
+            end_time: end!,
+          }));
+          try {
+            await api.setAvailability(token, weekdaySlots);
+          } catch (availErr: any) {
+            console.warn("[Perfil] Availability sync failed:", availErr.message);
+          }
+        }
       }
 
       // Actualizar el contexto global con los nuevos datos

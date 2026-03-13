@@ -168,14 +168,26 @@ const RegisterConfirm: React.FC = () => {
 
         try {
           await api.createNutritionistProfile(token, profilePayload);
+
+          // Configurar disponibilidad horaria (lunes a viernes) con los horarios del registro
+          const startTime = nutriPersonal.horarioDesde || "09:00";
+          const endTime = nutriPersonal.horarioHasta || "17:00";
+          const weekdaySlots = [1, 2, 3, 4, 5].map((day) => ({
+            day_of_week: day,
+            start_time: `${startTime}:00`,
+            end_time: `${endTime}:00`,
+          }));
+          try {
+            await api.setAvailability(token, weekdaySlots);
+          } catch (availErr: any) {
+            console.warn("[RegisterConfirm] Availability setup failed:", availErr.message);
+          }
         } catch (profileErr: any) {
           console.warn("[RegisterConfirm] Profile creation failed:", profileErr.message);
-          // No bloquear el flujo: la cuenta ya existe, el perfil se puede completar después
           setError(
             "Tu cuenta fue creada pero el perfil no se pudo guardar (error del servidor). " +
             "Podrás completarlo después. Redirigiendo..."
           );
-          // Esperar un momento para que el usuario vea el mensaje
           await new Promise((r) => setTimeout(r, 2000));
         }
 

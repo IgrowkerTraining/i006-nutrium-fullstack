@@ -32,6 +32,16 @@ const MatchNutriList: React.FC = () => {
 
   const isLicenseVerified = (license: string) => /^[A-Za-z]{2}\d{4}$/.test(license);
 
+  const formatAvailability = (n: any): string | undefined => {
+    const slots = n.availabilities;
+    if (!Array.isArray(slots) || slots.length === 0) return undefined;
+    const first = slots[0];
+    if (typeof first === "object" && first.start_time) {
+      return `${first.start_time.slice(0, 5)} - ${first.end_time.slice(0, 5)}`;
+    }
+    return typeof first === "string" ? first : undefined;
+  };
+
   const mapMatches = (matches: any[]) =>
     matches.map((m: any) => ({
       id: m.nutritionist_id,
@@ -47,8 +57,12 @@ const MatchNutriList: React.FC = () => {
   const fetchBackendFallback = async () => {
     const nutritionists = await api.getNutritionists();
     if (nutritionists.length > 0) {
-      setNutricionistas(nutritionists);
-      sessionStorage.setItem("nutrium_matches", JSON.stringify(nutritionists));
+      const withAvailability = nutritionists.map((n: any) => ({
+        ...n,
+        availability: n.availability || formatAvailability(n),
+      }));
+      setNutricionistas(withAvailability);
+      sessionStorage.setItem("nutrium_matches", JSON.stringify(withAvailability));
     }
   };
 
@@ -60,9 +74,11 @@ const MatchNutriList: React.FC = () => {
         if (full) {
           return {
             ...m,
+            user_id: full.user_id || m.user_id,
             license_number: full.license_number || m.license_number,
             modality: full.modality || m.modality,
             profile_picture_url: full.profile_picture_url || m.profile_picture_url,
+            availability: full.availability || formatAvailability(full) || m.availability,
           };
         }
         return m;
@@ -80,22 +96,29 @@ const MatchNutriList: React.FC = () => {
 
     // 1. Si la pantalla de carga trajo matches de IA, usarlos
     const stateMatches = (location.state as any)?.matches;
-    if (stateMatches && stateMatches.length > 0) {
-      console.warn('⚠️ Early return [1]: location.state.matches tiene datos, saltando fetch.', { count: stateMatches.length });
-      const mapped = mapMatches(stateMatches);
-      setNutricionistas(mapped);
-      sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
-      enrichMatches(mapped);
+    if (Array.isArray(stateMatches)) {
+      if (stateMatches.length > 0) {
+        const mapped = mapMatches(stateMatches);
+        setNutricionistas(mapped);
+        sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
+        enrichMatches(mapped);
+      } else {
+        sessionStorage.removeItem("nutrium_matches");
+      }
       return;
     }
 
     // 2. Si la pantalla de carga trajo nutricionistas del backend (fallback sin IA)
     const fallbackNutris = (location.state as any)?.fallbackNutritionists;
-    if (fallbackNutris && fallbackNutris.length > 0) {
-      console.warn('⚠️ Early return [2]: location.state.fallbackNutritionists tiene datos, saltando fetch.', { count: fallbackNutris.length });
-      setNutricionistas(fallbackNutris);
-      setAiFailed(true);
-      sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
+    if (Array.isArray(fallbackNutris)) {
+      if (fallbackNutris.length > 0) {
+        setNutricionistas(fallbackNutris);
+        setAiFailed(true);
+        sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
+      } else {
+        setAiFailed(true);
+        sessionStorage.removeItem("nutrium_matches");
+      }
       return;
     }
 

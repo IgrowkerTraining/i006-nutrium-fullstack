@@ -35,6 +35,17 @@ export const storage = {
   clear(): void {
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    // Limpiar datos de registro
+    localStorage.removeItem("nutrium_role");
+    localStorage.removeItem("nutrium_register_nutritionist_personal");
+    localStorage.removeItem("nutrium_register_nutritionist_professional");
+    localStorage.removeItem("nutrium_register_patient_personal");
+    localStorage.removeItem("nutrium_register_patient_health");
+    localStorage.removeItem("nutrium_register_photo");
+    // Limpiar cache de sesión
+    sessionStorage.removeItem("nutrium_temp_password");
+    sessionStorage.removeItem("nutrium_matches");
+    sessionStorage.removeItem("nutrium_patient_matches");
   },
 
   // --- Notificaciones ---
