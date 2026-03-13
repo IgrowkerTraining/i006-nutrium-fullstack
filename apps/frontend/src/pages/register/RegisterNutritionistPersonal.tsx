@@ -285,31 +285,6 @@ const RegisterNutritionistPersonal: React.FC = () => {
           Continuar
         </Button>
 
-        {/* Botón mock para DEV */}
-        {import.meta.env.DEV && (
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              localStorage.setItem("nutrium_role", "nutritionist");
-              sessionStorage.setItem("nutrium_dev_mock", "1");
-              sessionStorage.setItem("nutrium_temp_password", "12345678");
-              localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                fullName: "Test Nutri",
-                email: "test@test.com",
-                modalidad: "online",
-                formacion: "grado",
-                especializacion: "deportiva",
-                disponibilidad: "mananas",
-              }));
-              navigate("/register/nutritionist/professional");
-            }}
-          >
-            [DEV] Skip
-          </Button>
-        )}
-
         <p className="text-center text-sm text-slate-500">
           ¿Ya tienes cuenta?{" "}
           <Link

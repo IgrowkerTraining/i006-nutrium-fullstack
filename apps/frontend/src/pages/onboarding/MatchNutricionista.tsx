@@ -36,7 +36,7 @@ const MatchNutricionista: React.FC = () => {
           navigate("/match/paciente-list", { state: { patients } });
         })
         .catch(() => {
-          navigate("/match/paciente-list");
+          navigate("/match/paciente-list", { state: { serviceUnavailable: true } });
         });
     } else {
       minDelay.then(() => navigate("/match/paciente-list"));
