@@ -52,7 +52,7 @@ NutritionistProfile.init(
 
     // Modalidad de atención: online | presencial | hibrido
     modality: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.ENUM("online", "presencial", "hibrido"),
       allowNull: false,
       validate: {
         notNull: { msg: "modality es obligatoria" },

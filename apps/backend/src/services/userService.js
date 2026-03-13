@@ -1,6 +1,6 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 class UserService {
   /**
@@ -18,7 +18,7 @@ class UserService {
     // Verificar si el email ya existe
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      const error = new Error('El email ya está registrado');
+      const error = new Error("El email ya está registrado");
       error.statusCode = 400;
       throw error;
     }
@@ -35,12 +35,19 @@ class UserService {
         email,
         password_hash: hashedPassword,
         name,
-        role: role || 'patient',
+        role: role || "patient",
       },
-      { hooks: false } // ← evita que beforeCreate vuelva a hashear
+      { hooks: false }, // ← evita que beforeCreate vuelva a hashear
     );
 
-    return newUser.toJSON();
+    // Generar JWT al registrar para evitar un login extra en el cliente
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET || "default-secret-key-change-in-production",
+      { expiresIn: "7d" },
+    );
+
+    return { user: newUser.toJSON(), token };
   }
 
   /**
@@ -57,7 +64,7 @@ class UserService {
     // Buscar usuario por email
     const user = await User.findOne({ where: { email: normalizedEmail } });
     if (!user) {
-      const error = new Error('Email o contraseña inválidos');
+      const error = new Error("Email o contraseña inválidos");
       error.statusCode = 401;
       throw error;
     }
@@ -65,7 +72,7 @@ class UserService {
     // Validar contraseña usando bcrypt
     const isPasswordValid = await user.validatePassword(password);
     if (!isPasswordValid) {
-      const error = new Error('Email o contraseña inválidos');
+      const error = new Error("Email o contraseña inválidos");
       error.statusCode = 401;
       throw error;
     }
@@ -74,7 +81,9 @@ class UserService {
     // Se comprueba DESPUÉS de validar la contraseña: solo un usuario que conoce
     // sus credenciales recibe esta información, evitando filtrar si una cuenta existe.
     if (!user.is_active) {
-      const error = new Error('Tu cuenta ha sido desactivada. Contacta al administrador.');
+      const error = new Error(
+        "Tu cuenta ha sido desactivada. Contacta al administrador.",
+      );
       error.statusCode = 403;
       throw error;
     }
@@ -86,10 +95,10 @@ class UserService {
         email: user.email,
         role: user.role,
       },
-      process.env.JWT_SECRET || 'default-secret-key-change-in-production',
+      process.env.JWT_SECRET || "default-secret-key-change-in-production",
       {
-        expiresIn: '7d', // Token válido por 7 días
-      }
+        expiresIn: "7d", // Token válido por 7 días
+      },
     );
 
     return {
@@ -113,7 +122,7 @@ class UserService {
    */
   async getAllUsers() {
     const users = await User.findAll();
-    return users.map(user => user.toJSON());
+    return users.map((user) => user.toJSON());
   }
 }
 

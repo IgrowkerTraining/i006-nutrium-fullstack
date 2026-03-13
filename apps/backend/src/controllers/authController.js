@@ -1,4 +1,4 @@
-const userService = require('../services/userService');
+const userService = require("../services/userService");
 
 class AuthController {
   /**
@@ -14,26 +14,26 @@ class AuthController {
       if (!name || !email || !password) {
         return res.status(400).json({
           success: false,
-          message: 'Los campos nombre, email y contraseña son requeridos',
+          message: "Los campos nombre, email y contraseña son requeridos",
         });
       }
 
-      // Crear usuario en la BD
-      const user = await userService.createUser({
+      // Crear usuario en la BD (retorna { user, token })
+      const { user, token } = await userService.createUser({
         name,
         email,
         password,
         role,
       });
 
-      // Respuesta exitosa
+      // Respuesta exitosa incluyendo JWT para auto-login del cliente
       return res.status(201).json({
         success: true,
-        message: 'Usuario registrado exitosamente',
-        data: { user },
+        message: "Usuario registrado exitosamente",
+        data: { user, token },
       });
     } catch (error) {
-      console.error('Error en registro:', error.message);
+      console.error("Error en registro:", error.message);
 
       // Errores de validación (email duplicado, etc)
       if (error.statusCode === 400) {
@@ -46,7 +46,7 @@ class AuthController {
       // Error de servidor
       return res.status(500).json({
         success: false,
-        message: 'Error al registrar el usuario',
+        message: "Error al registrar el usuario",
       });
     }
   }
@@ -64,7 +64,7 @@ class AuthController {
       if (!email || !password) {
         return res.status(400).json({
           success: false,
-          message: 'Email y contraseña son requeridos',
+          message: "Email y contraseña son requeridos",
         });
       }
 
@@ -74,14 +74,14 @@ class AuthController {
       // Respuesta exitosa
       return res.status(200).json({
         success: true,
-        message: 'Login exitoso',
+        message: "Login exitoso",
         data: {
           user,
           token,
         },
       });
     } catch (error) {
-      console.error('Error en login:', error.message);
+      console.error("Error en login:", error.message);
 
       // Errores de autenticación (credenciales inválidas)
       if (error.statusCode === 401) {
@@ -102,7 +102,7 @@ class AuthController {
       // Error de servidor
       return res.status(500).json({
         success: false,
-        message: 'Error al iniciar sesión',
+        message: "Error al iniciar sesión",
       });
     }
   }
