@@ -110,9 +110,12 @@ const MatchNutriList: React.FC = () => {
 
   useEffect(() => {
     console.log('🚀 Iniciando fetch de matches...');
+    console.log('🔍 Variables de estado:', { user, token, patientId: user?.id, role: user?.role, hasRealSession });
+
     // 1. Si la pantalla de carga trajo matches de IA, usarlos
     const stateMatches = (location.state as any)?.matches;
     if (stateMatches && stateMatches.length > 0) {
+      console.warn('⚠️ Early return [1]: location.state.matches tiene datos, saltando fetch.', { count: stateMatches.length });
       const mapped = mapMatches(stateMatches);
       setNutricionistas(mapped);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(mapped));
@@ -123,6 +126,7 @@ const MatchNutriList: React.FC = () => {
     // 2. Si la pantalla de carga trajo nutricionistas del backend (fallback sin IA)
     const fallbackNutris = (location.state as any)?.fallbackNutritionists;
     if (fallbackNutris && fallbackNutris.length > 0) {
+      console.warn('⚠️ Early return [2]: location.state.fallbackNutritionists tiene datos, saltando fetch.', { count: fallbackNutris.length });
       setNutricionistas(fallbackNutris);
       setAiFailed(true);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(fallbackNutris));
@@ -133,7 +137,7 @@ const MatchNutriList: React.FC = () => {
     const cached = sessionStorage.getItem("nutrium_matches");
     if (cached) {
       try {
-        console.log('[MatchNutriList] Usando datos cacheados de sessionStorage (no se llama a la IA)');
+        console.warn('⚠️ Early return [3]: sessionStorage "nutrium_matches" tiene datos, saltando fetch.', { cached });
         setNutricionistas(JSON.parse(cached));
         return;
       } catch { /* ignorar cache corrupto */ }
@@ -141,17 +145,17 @@ const MatchNutriList: React.FC = () => {
 
     // 4. Acceso directo a esta URL: IA → Backend → Mocks
     if (!hasRealSession) {
-      console.error('[MatchNutriList] No hay sesión real activa, se omite la llamada a la IA.');
+      console.warn('⚠️ Early return [4]: hasRealSession es false. token:', token, '| user?.id:', user?.id);
       setLoading(false);
       return;
     }
     if (!token) {
-      console.error('[MatchNutriList] Falta el token de autenticación, no se puede consultar a la IA.');
+      console.warn('⚠️ Early return [5]: token es falsy.', { token });
       setLoading(false);
       return;
     }
     if (!user?.id) {
-      console.error('[MatchNutriList] Falta el ID del paciente, no se puede consultar a la IA.');
+      console.warn('⚠️ Early return [6]: user?.id es falsy.', { user });
       setLoading(false);
       return;
     }

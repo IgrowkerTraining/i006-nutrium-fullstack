@@ -185,14 +185,20 @@ class MatchmakingService {
 
     // ── C. HTTP Request al microservicio de IA ───────────────────────────────
 
+    // Recorte de datos: limitar a 5 perfiles para evitar timeouts (502)
+    // causados por payloads demasiado grandes en modelos de IA pesados.
+    const nutritionistsToAnalyze = nutritionistPayloads.slice(0, 5);
+
     const aiServiceUrl =
       process.env.AI_SERVICE_URL || "http://localhost:8000/api/v1";
     const endpoint = `${aiServiceUrl}/match/analyze`;
 
     const requestBody = {
       patient_profile: patientPayload,
-      nutritionists: nutritionistPayloads,
+      nutritionists: nutritionistsToAnalyze,
       top_n: 5,
+      // Forzar modelo rápido para evitar timeouts del balanceador de carga
+      ai_model: "google/gemini-flash-1.5",
     };
 
     let aiResponse;
