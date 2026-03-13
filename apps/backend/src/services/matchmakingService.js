@@ -198,7 +198,7 @@ class MatchmakingService {
       nutritionists: nutritionistsToAnalyze,
       top_n: 5,
       // Forzar modelo rápido para evitar timeouts del balanceador de carga
-      ai_model: "google/gemini-1.5-flash",
+      ai_model: "meta-llama/llama-3-8b-instruct",
     };
 
     let aiResponse;
