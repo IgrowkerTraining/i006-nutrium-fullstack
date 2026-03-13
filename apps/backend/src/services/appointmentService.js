@@ -270,13 +270,20 @@ class AppointmentService {
     this.validateTimeRange(normalizedStart, normalizedEnd);
     this.validateFutureDate(normalizedDate, normalizedStart);
 
-    // Regla Anti-Spam: un paciente no puede tener más de un turno pendiente.
+    // Regla Anti-Spam: un paciente no puede tener más de un turno pendiente FUTURO.
+    // Se filtra por appointment_date >= hoy en UTC para que citas de sesiones
+    // anteriores ya pasadas no bloqueen indefinidamente al paciente.
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD en UTC
     const pendingAppointment = await Appointment.findOne({
-      where: { patient_id: patientId, status: "pending" },
+      where: {
+        patient_id: patientId,
+        status: "pending",
+        appointment_date: { [Op.gte]: today },
+      },
     });
     if (pendingAppointment) {
       const error = new Error(
-        "Ya tienes un turno pendiente. Debes esperar a que sea confirmado o cancelarlo antes de solicitar uno nuevo.",
+        `Ya tienes un turno pendiente para el ${pendingAppointment.appointment_date}. Cancélalo antes de solicitar uno nuevo.`,
       );
       error.statusCode = 400;
       throw error;

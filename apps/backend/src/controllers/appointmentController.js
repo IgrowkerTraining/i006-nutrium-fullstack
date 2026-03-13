@@ -113,6 +113,11 @@ class AppointmentController {
       const statusCode = error.statusCode || 500;
       const message =
         statusCode < 500 ? error.message : "Error al agendar la cita";
+      // Log explícito para trazabilidad en Render / cualquier servidor remoto
+      console.error(
+        `[createAppointment ${statusCode}] ${error.message}`,
+        { patient_id: req.user?.id, body: req.body },
+      );
       return res
         .status(statusCode)
         .json({ success: false, message, data: null });

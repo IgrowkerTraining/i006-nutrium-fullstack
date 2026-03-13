@@ -382,6 +382,8 @@ export const api = {
     });
     const result = await readJsonSafely(response);
     if (!response.ok) {
+      // Log del cuerpo completo para diagnosticar en DevTools sin abrir Network tab
+      console.error('❌ Backend response createAppointment:', result);
       // Surface field-level errors from the backend (e.g. missing/invalid fields)
       const fieldErrors: string[] = result?.data?.errors
         ? (Array.isArray(result.data.errors)

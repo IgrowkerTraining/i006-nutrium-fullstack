@@ -18,6 +18,7 @@ require("dotenv").config();
 const sequelize = require("../config/database");
 const User = require("../models/User");
 const NutritionistProfile = require("../models/NutritionistProfile");
+const Availability = require("../models/Availability");
 
 // ── Datos seed ────────────────────────────────────────────────────────────────
 
@@ -186,6 +187,22 @@ async function seed() {
       console.log(
         `✔  Perfil creado: matrícula ${profile.license_number} ` +
           `(${profileData.specializations[0]})`,
+      );
+
+      // Crear disponibilidad lunes a sábado 08:00-18:00 para el perfil recién creado.
+      // Sin estos registros, ensureWithinAvailability rechaza cualquier cita con 400.
+      const WORK_DAYS = [1, 2, 3, 4, 5, 6]; // lunes=1 … sábado=6
+      for (const day of WORK_DAYS) {
+        await Availability.create({
+          nutritionist_profile_id: profile.id,
+          day_of_week: day,
+          start_time: "08:00:00",
+          end_time: "18:00:00",
+          is_active: true,
+        });
+      }
+      console.log(
+        `✔  Disponibilidad creada (Lun-Sáb 08:00-18:00) para perfil id=${profile.id}`,
       );
     }
 
