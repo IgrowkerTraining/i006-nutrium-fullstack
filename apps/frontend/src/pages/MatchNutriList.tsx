@@ -103,8 +103,8 @@ const MatchNutriList: React.FC = () => {
       });
       setNutricionistas(enriched);
       sessionStorage.setItem("nutrium_matches", JSON.stringify(enriched));
-    } catch {
-      // Silencioso - se muestran sin matrícula si falla
+    } catch (enrichErr) {
+      console.error("[MatchNutriList] No se pudo enriquecer con datos del backend:", enrichErr);
     }
   };
 
@@ -156,12 +156,13 @@ const MatchNutriList: React.FC = () => {
         }
       })
       .catch(async (err) => {
-        console.warn("[MatchNutriList] IA no disponible, intentando backend:", err.message);
+        console.error("[MatchNutriList] IA no disponible, intentando backend:", err);
         setAiFailed(true);
         try {
           await fetchBackendFallback();
         } catch (backendErr) {
-          console.warn("[MatchNutriList] Backend no disponible, usando mocks");
+          console.error("[MatchNutriList] Backend no disponible, se muestran datos de ejemplo:", backendErr);
+          setError("No se pudieron cargar las recomendaciones. Verifica tu conexión o inicia sesión nuevamente.");
         }
       })
       .finally(() => setLoading(false));
@@ -174,6 +175,25 @@ const MatchNutriList: React.FC = () => {
         <p className="text-[0.875em] leading-[1.375em]">Estos nutricionistas tienen mas compatibilidad con lo que estás buscando.</p>
       </article>
       <p className="text-[0.813em] leading-[1.25em] ml-4 mb-12">* Las recomendaciones se basan en la información proporcionada y no sustituyen evualuación médica</p>
+
+      {loading && (
+        <div className="mx-4 mb-4 text-center text-sm text-gray-500 py-6">
+          Cargando recomendaciones...
+        </div>
+      )}
+
+      {error && (
+        <div className="mx-4 mb-4 bg-red-50 border border-red-300 text-red-700 text-sm p-4 rounded-lg">
+          <p className="font-semibold mb-1">Error al cargar los datos</p>
+          <p>{error}</p>
+          <button
+            className="mt-2 underline text-red-600 text-xs"
+            onClick={() => { setError(null); window.location.reload(); }}
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {!hasRealSession && (
         <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg">
